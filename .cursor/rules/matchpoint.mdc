@@ -1,0 +1,12 @@
+---
+description: Regras obrigatórias de colaboração e propriedade do MatchPoint
+alwaysApply: true
+---
+
+Antes de analisar ou alterar o projeto, leia e siga integralmente:
+
+- `AGENTS.md`
+- `docs/MANUAL_DE_COLABORACAO.md`
+- `docs/CONTRATOS_DE_DADOS.md` para tarefas de dados, autenticação, API ou banco
+
+Respeite a propriedade de cada área. Não altere arquivos controlados, dependências ou código de outro responsável sem autorização explícita. Limite toda mudança ao escopo solicitado e execute as validações definidas em `AGENTS.md`.
