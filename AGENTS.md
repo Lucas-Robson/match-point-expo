@@ -71,6 +71,7 @@ Não instale, remova ou atualize dependências sem autorização do Renato.
 Depois de alterar código executável, rode:
 
 ```text
+npm run check:contracts
 npm run export:web
 ```
 

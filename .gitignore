@@ -4,3 +4,8 @@ node_modules/
 dist/
 .vercel/
 *.log
+
+# Configuração local e credenciais
+.env
+.env.*
+!.env.example

@@ -647,7 +647,7 @@ Cobertura total = requisitos funcionais Concluídos / 30
 - não iniciar P1 com qualquer P0 bloqueado por código;
 - não iniciar P2 nesta entrega;
 - usar dados de demonstração seguros e pequenos;
-- se uma integração consumir mais de 60 minutos, registrar o bloqueio e voltar ao último contrato estável;
+- se uma integração consumir mais de 45 minutos, registrar o bloqueio e voltar ao último contrato estável;
 - problemas cosméticos sem impacto no fluxo entram no backlog posterior;
 - o Dia 3 é de estabilização, não de aumento de escopo;
 - horas extras não substituem redução consciente de escopo.
