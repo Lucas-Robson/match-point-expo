@@ -5,10 +5,11 @@ Estas regras se aplicam a qualquer IA que leia, analise ou altere este repositó
 ## Antes de fazer qualquer alteração
 
 1. Leia integralmente `docs/MANUAL_DE_COLABORACAO.md`.
-2. Se a tarefa envolver dados, autenticação, API ou banco, leia também `docs/CONTRATOS_DE_DADOS.md`.
-3. Identifique a área responsável e os arquivos autorizados pela solicitação.
-4. Verifique o estado atual dos arquivos antes de editar e preserve mudanças existentes.
-5. Declare quais arquivos pretende alterar quando o trabalho ultrapassar uma única tela ou componente.
+2. Durante o ciclo intensivo de três dias, leia também `docs/MANUAL_DO_PROJETO_3_DIAS.md` e identifique a prioridade P0, P1 ou P2.
+3. Se a tarefa envolver dados, autenticação, API ou banco, leia também `docs/CONTRATOS_DE_DADOS.md`.
+4. Identifique a área responsável e os arquivos autorizados pela solicitação.
+5. Verifique o estado atual dos arquivos antes de editar e preserve mudanças existentes.
+6. Declare quais arquivos pretende alterar quando o trabalho ultrapassar uma única tela ou componente.
 
 Se a solicitação conflitar com este documento, siga a solicitação explícita do usuário, mas informe claramente o conflito e o impacto.
 
@@ -43,6 +44,7 @@ Não instale, remova ou atualize dependências sem autorização do Renato.
 ## Conduta obrigatória
 
 - altere somente os arquivos necessários para a tarefa;
+- durante os três dias, não implemente P1 enquanto algum P0 estiver bloqueado por código e não implemente P2;
 - não faça refatorações, renomeações ou formatações em massa;
 - não mova arquivos de outra área;
 - não apague código aparentemente sem uso sem confirmar sua finalidade;

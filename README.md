@@ -11,6 +11,7 @@ Pessoas devem ler o [Manual de colaboração](docs/MANUAL_DE_COLABORACAO.md). Fe
 Documentos principais:
 
 - [Manual de colaboração](docs/MANUAL_DE_COLABORACAO.md)
+- [Manual do projeto e plano de execução de 3 dias](docs/MANUAL_DO_PROJETO_3_DIAS.md)
 - [Contratos de dados](docs/CONTRATOS_DE_DADOS.md)
 - [Registro de decisões técnicas](docs/decisoes/README.md)
 
