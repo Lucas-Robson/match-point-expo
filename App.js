@@ -1,8 +1,10 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { View, useWindowDimensions } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import { useFonts } from 'expo-font'
 import { ScreenTransition } from './src/components/motion'
+import { getHomeRouteForUser } from './src/core/session'
+import { createRepositories } from './src/repositories'
 import {
   ApplicationDetailScreen,
   ApplicationInfoScreen,
@@ -145,11 +147,34 @@ export default function App() {
     Griffiths: require('./assets/Griffiths.otf'),
   })
   const { width, height } = useWindowDimensions()
+  const repositories = useMemo(() => createRepositories(), [])
   const [screen, setScreen] = useState('opening')
+  const [session, setSession] = useState(null)
+  const [sessionResolved, setSessionResolved] = useState(false)
   const transitionDirection = useRef(1)
   const isPhoneViewport = width <= 430
   const frameWidth = isPhoneViewport ? width : Math.min(height * (402 / 874), 430)
   const frameHeight = isPhoneViewport ? height : frameWidth * (874 / 402)
+
+  useEffect(() => {
+    const unsubscribe = repositories.authentication.observarSessao((nextSession) => {
+      setSession(nextSession)
+      setSessionResolved(true)
+
+      if (!nextSession) {
+        setScreen('opening')
+        return
+      }
+
+      const destination = getHomeRouteForUser(nextSession)
+      if (destination) {
+        transitionDirection.current = 1
+        setScreen(destination)
+      }
+    })
+
+    return unsubscribe
+  }, [repositories])
 
   const go = next => {
     if (!ROUTES[next] || next === screen) return
@@ -165,7 +190,7 @@ export default function App() {
     setScreen(HISTORY[screen] || 'opening')
   }
 
-  if (!fontsLoaded && !fontError) {
+  if ((!fontsLoaded && !fontError) || !sessionResolved) {
     return <View style={[styles.full, { backgroundColor: '#0b542d' }]} />
   }
 
@@ -175,7 +200,12 @@ export default function App() {
     <View style={[styles.appFrame, { width: frameWidth, height: frameHeight }]}>
       <StatusBar style="light" translucent />
       <ScreenTransition key={screen} direction={transitionDirection.current}>
-        <CurrentScreen go={go} back={back} />
+        <CurrentScreen
+          go={go}
+          back={back}
+          repositories={repositories}
+          session={session}
+        />
       </ScreenTransition>
     </View>
   )
