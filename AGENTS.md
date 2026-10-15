@@ -92,6 +92,40 @@ Itens `simulado` não avançam a barra. O estado `concluido` exige PR e evidênc
 - não copie código manualmente entre branches quando a dependência deve chegar por Pull Request;
 - revise `git status` e `git diff` antes de entregar.
 
+## Base obrigatória de trabalho
+
+`develop` é a fonte única de trabalho da equipe. O painel de progresso, os contratos e as dependências a serem consumidas devem ser conferidos nessa branch, nunca na `main` ou em uma branch pessoal.
+
+| Branch | Uso permitido |
+| --- | --- |
+| `main` | Somente versão estável, demonstrável e já validada em `develop`. Nunca é base de uma tarefa. |
+| `develop` | Integração diária e ponto de partida obrigatório de toda tarefa. |
+| `codex/*`, `feat/*`, `fix/*`, `infra/*`, `docs/*` | Uma tarefa isolada, criada a partir de `develop`. |
+
+Antes de qualquer IA ou integrante iniciar uma tarefa, executar e conferir:
+
+```text
+git fetch origin --prune
+git switch develop
+git pull --ff-only origin develop
+git status --short --branch
+git switch -c tipo/area-descricao
+```
+
+Só comece se `git status --short --branch` confirmar a branch de tarefa e não mostrar alterações herdadas de outra pessoa. Nunca use `main` como base para uma feature, mesmo que ela pareça mais atual.
+
+### Quando `main` e `develop` divergirem
+
+Se um commit entrar por engano na `main`, não faça push direto, cópia manual, `reset` ou `cherry-pick` para "corrigir". Registre a divergência e o Renato deve:
+
+1. criar uma branch de sincronização a partir de `origin/develop`;
+2. integrar `origin/main` nessa branch, preservando os dados mais novos da `develop` em caso de conflito;
+3. abrir uma Pull Request com destino em `develop`;
+4. pedir revisão e só então fazer o merge;
+5. avisar a equipe para atualizar a `develop` antes de abrir novas branches.
+
+Enquanto a sincronização não for integrada, ninguém deve iniciar uma tarefa que dependa dos commits ausentes. O estado oficial de cada RF é sempre o arquivo `docs/PROGRESSO.md` presente na `develop`.
+
 ## Validação mínima
 
 Depois de alterar código executável, rode:
