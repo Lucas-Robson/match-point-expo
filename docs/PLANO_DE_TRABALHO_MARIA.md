@@ -44,6 +44,9 @@ visual, respeitando os limites para estilos locais de outras áreas.
   implementação observada.
 - A implementação de autenticação em memória é demonstrativa: não valida
   senhas reais nem oferece persistência de conta.
+- A configuração local `.env` seleciona `firebase`, mas a fábrica em
+  `src/repositories/index.js` ainda só implementa `memory` e lança erro para
+  `firebase`.
 - Não foi localizada uma tela própria para o responsável consultar e administrar
   os atletas vinculados.
 
@@ -120,3 +123,30 @@ assumir a implementação do Firebase ou de rotas pertencentes ao Renato.
   `não_iniciado` no painel de progresso.
 - Próxima ação: resolver com Renato as dependências de contrato, autenticação e
   acesso à administração antes de iniciar RF06/RF07.
+
+### 2026-10-15 — Verificação das dependências de Renato
+
+- O painel `docs/PROGRESSO.md` continua marcando RF02, RF12, RF13, RF14 e RF22
+  de Renato como `Não iniciado`.
+- `src/repositories/index.js` continua sem adaptador Firebase; com
+  `EXPO_PUBLIC_DATA_PROVIDER=firebase`, `createRepositories` lança erro.
+- Conclusão: Maria pode iniciar trabalho de interface e validação independente
+  do Firebase usando o adaptador em memória, desde que a inicialização local não
+  dependa da variável `firebase`. A integração real de RF01 e os fluxos de
+  vínculo/administração de RF06/RF07 ainda dependem do alinhamento e das
+  entregas de Renato.
+- A verificação não altera o status dos requisitos; todos continuam
+  `não_iniciado`.
+
+### 2026-10-15 — Nova checagem após implementação reportada
+
+- Conferidos o estado do Git, os commits recentes, o painel individual de
+  Renato, `src/repositories/index.js` e as pastas de repositórios e serviços.
+- Não há implementação Firebase visível nesta cópia/branch: só existem a
+  fábrica e o adaptador em memória, e os requisitos de Renato continuam
+  `não_iniciado`.
+- Com `EXPO_PUBLIC_DATA_PROVIDER=firebase`, `createRepositories()` ainda lança
+  `Provedor de dados ainda não configurado: firebase`.
+- Isso indica que a implementação reportada pode ainda não ter sido integrada
+  ou atualizada nesta cópia do projeto; não confirma que o trabalho de Renato
+  não exista em outra branch ou ambiente.
