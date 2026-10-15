@@ -232,7 +232,8 @@ assumir a implementação do Firebase ou de rotas pertencentes ao Renato.
 ### Atualização — implementação de RF01
 
 - Trabalho em andamento na branch `feat/maria-autenticacao`, derivada de
-  `origin/develop`; as alterações ainda não foram publicadas em uma PR.
+  `origin/develop`. A branch foi publicada em `origin` no commit `2766834`;
+  ainda não há PR aberta.
 - Login e cadastro agora usam o contrato `repositories.authentication`,
   apresentam erros e estado de envio e validam os campos antes de chamar o
   repositório. A recuperação de senha funcional já está registrada na PR #13.
@@ -254,11 +255,13 @@ assumir a implementação do Firebase ou de rotas pertencentes ao Renato.
   e ocultação de ambas as senhas. A verificação automatizada também cobre a
   criação dos quatro tipos de perfil e rejeita data inválida/menor sem vínculo.
   Nenhuma conta real foi criada nem operação Firebase executada.
+- Validações: `npm run check:contracts`, `npm run progress -- --check`,
+  `npm run export:web` e `git diff --check` passaram.
 - RF04 foi marcado como `concluido` com evidência da PR #9 integrada em
   `develop`; RF01 permanece `em_andamento` até validação final e publicação.
-- Pendências de RF01: concluir a revisão e as validações automatizadas, então
-  publicar a branch para revisão. A modalidade e os demais dados esportivos
-  continuam dependentes do fluxo RF03, sob responsabilidade do Marcelo.
+- Pendências de RF01: abrir a PR e solicitar revisão do Renato. A modalidade e
+  os demais dados esportivos continuam dependentes do fluxo RF03, sob
+  responsabilidade do Marcelo.
 - As regras de segurança do Firestore não estão versionadas neste repositório;
   o acesso de cada usuário à criação do próprio perfil precisa ser confirmado no
   projeto Firebase antes de habilitar cadastros reais.
