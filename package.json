@@ -8,7 +8,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "export:web": "expo export --platform web",
-    "check:contracts": "node --no-warnings scripts/verify-memory-contracts.mjs"
+    "check:contracts": "node --no-warnings scripts/verify-memory-contracts.mjs",
+    "progress": "node scripts/progress.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/poppins": "^0.4.1",

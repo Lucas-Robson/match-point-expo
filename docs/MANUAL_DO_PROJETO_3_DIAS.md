@@ -550,6 +550,20 @@ Concluído
 
 `Simulado` não entra no cálculo dos 70%.
 
+### Painel automático
+
+O acompanhamento oficial fica em `docs/PROGRESSO.md`. Cada IA atualiza o requisito pelo comando `npm run progress -- set ...`; as regras completas estão em `AGENTS.md`.
+
+O painel apresenta:
+
+- barra P0, usada para a meta de 70%;
+- barras P1, P2 e total;
+- progresso individual de Maria, Marcelo, Laura e Renato;
+- requisitos em andamento e bloqueados;
+- PR e evidência de cada requisito concluído.
+
+Os arquivos de origem ficam separados por responsável em `docs/progresso/`, evitando que todos editem o mesmo arquivo manualmente.
+
 ---
 
 ## 11. Roteiros mínimos de teste

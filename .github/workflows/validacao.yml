@@ -49,5 +49,8 @@ jobs:
       - name: Verificar contratos P0 em memória
         run: npm run check:contracts
 
+      - name: Verificar painel de progresso
+        run: npm run progress -- --check
+
       - name: Validar exportação web
         run: npm run export:web

@@ -1,0 +1,12 @@
+{
+  "responsavel": "Marcelo",
+  "requisitos": [
+    { "id": "RF03", "titulo": "Perfil esportivo", "prioridade": "P0", "status": "nao_iniciado", "pr": "", "evidencia": "", "bloqueio": "", "atualizadoEm": "" },
+    { "id": "RF10", "titulo": "Pesquisa e filtros", "prioridade": "P0", "status": "nao_iniciado", "pr": "", "evidencia": "", "bloqueio": "", "atualizadoEm": "" },
+    { "id": "RF11", "titulo": "Detalhes da oportunidade", "prioridade": "P0", "status": "nao_iniciado", "pr": "", "evidencia": "", "bloqueio": "", "atualizadoEm": "" },
+    { "id": "RF15", "titulo": "Realizar candidatura", "prioridade": "P0", "status": "nao_iniciado", "pr": "", "evidencia": "", "bloqueio": "", "atualizadoEm": "" },
+    { "id": "RF16", "titulo": "Enviar documentos", "prioridade": "P0", "status": "nao_iniciado", "pr": "", "evidencia": "", "bloqueio": "", "atualizadoEm": "" },
+    { "id": "RF17", "titulo": "Status e histórico do atleta", "prioridade": "P0", "status": "nao_iniciado", "pr": "", "evidencia": "", "bloqueio": "", "atualizadoEm": "" },
+    { "id": "RF23", "titulo": "Notificações", "prioridade": "P1", "status": "nao_iniciado", "pr": "", "evidencia": "", "bloqueio": "", "atualizadoEm": "" }
+  ]
+}

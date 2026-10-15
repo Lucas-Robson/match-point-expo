@@ -12,6 +12,7 @@ Antes de dividir o trabalho, a equipe deve confirmar:
 - a versão P0 de `docs/CONTRATOS_DE_DADOS.md` foi aceita;
 - ninguém possui chave, senha ou conta real dentro do repositório;
 - as quatro primeiras Issues estão atribuídas.
+- cada pessoa consegue executar `npm run progress` e localizar seus requisitos no painel.
 
 ## Sequência
 
@@ -34,6 +35,12 @@ npm run export:web
 ```
 
 Cada integrante cria somente a primeira branch do seu módulo.
+
+Antes do primeiro código, cada pessoa marca seu requisito ativo:
+
+```text
+npm run progress -- set RFXX em_andamento
+```
 
 ### 09:15–10:00 — Contratos
 
@@ -139,4 +146,5 @@ Depois de 45 minutos sem avanço:
 - integrar somente builds aprovados;
 - executar a fatia vertical;
 - atualizar os 21 itens P0;
+- executar `npm run progress -- --check`;
 - registrar o primeiro bloqueio do Dia 2, se existir.

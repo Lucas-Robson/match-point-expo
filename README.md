@@ -13,6 +13,7 @@ Documentos principais:
 - [Manual de colaboração](docs/MANUAL_DE_COLABORACAO.md)
 - [Manual do projeto e plano de execução de 3 dias](docs/MANUAL_DO_PROJETO_3_DIAS.md)
 - [Checklist de arranque do Dia 1](docs/ARRANQUE_DIA_1.md)
+- [Painel de progresso](docs/PROGRESSO.md)
 - [Contratos de dados](docs/CONTRATOS_DE_DADOS.md)
 - [Registro de decisões técnicas](docs/decisoes/README.md)
 

@@ -107,10 +107,7 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
       emitSession()
       return success(null)
     },
-    recuperarSenha: async (email) => {
-      state.users.some((user) => user.email.toLowerCase() === String(email).toLowerCase())
-      return success({ solicitado: true })
-    },
+    recuperarSenha: async () => success({ solicitado: true }),
     obterSessaoAtual: async () => success(currentSession()),
     observarSessao: (callback) => {
       sessionListeners.add(callback)
