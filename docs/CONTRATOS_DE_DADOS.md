@@ -1,6 +1,8 @@
 # Contratos de dados — MatchPoint
 
-Status: rascunho para aprovação da equipe antes da implementação do banco.
+Status: **versão P0 congelada em 2026-10-09** para o ciclo de três dias.
+
+Qualquer mudança incompatível precisa de aprovação de Renato e dos responsáveis pelas telas consumidoras. Campos opcionais podem ser acrescentados sem remover ou renomear os existentes.
 
 ## Objetivo
 
@@ -55,6 +57,26 @@ titulos?
 perfilCompleto
 ```
 
+### Responsável legal
+
+```text
+id
+usuarioId
+atletasVinculadosIds[]
+parentesco
+documento?
+telefone
+criadoEm
+atualizadoEm
+```
+
+Regras P0:
+
+- a idade é calculada a partir de `dataNascimento`, nunca informada manualmente;
+- atleta com menos de 18 anos exige `responsavelId` válido;
+- o responsável consulta e altera somente atletas presentes em `atletasVinculadosIds`;
+- o vínculo deve ser validado dos dois lados antes de concluir o cadastro.
+
 ### Parceiro
 
 Representa treinador ou instituição.
@@ -83,6 +105,8 @@ localizacao
 instituicao?
 beneficio?
 requisitos[]
+criteriosElegibilidade[]
+documentosNecessarios[]
 inicioInscricoes?
 fimInscricoes
 status: rascunho | ativa | encerrada | em_analise
@@ -100,9 +124,12 @@ status: iniciada | inscrita | documentos_enviados | em_analise | aprovada | reje
 matchScore?
 documentos[]
 historico[]
+motivoBloqueio?
 criadoEm
 atualizadoEm
 ```
+
+Existe no máximo uma candidatura por combinação de `oportunidadeId` e `atletaId`.
 
 ### Documento da candidatura
 
@@ -136,26 +163,51 @@ calculadoEm
 versaoDoCalculo
 ```
 
+### Resultado de elegibilidade
+
+```text
+elegivel
+criterios[]:
+  codigo
+  nome
+  obrigatorio
+  atendido
+  motivo?
+motivosBloqueio[]
+avaliadoEm
+```
+
 ## Interfaces esperadas dos repositórios
 
 ### Autenticação
 
 ```text
+cadastrar(email, senha, tipo, dadosIniciais)
 entrar(email, senha)
 sair()
 recuperarSenha(email)
 obterSessaoAtual()
+observarSessao(callback)
 ```
 
 ### Usuários e perfis
 
 ```text
 obterUsuario(id)
+obterUsuarioAtual()
 atualizarUsuario(id, dados)
+criarPerfilAtleta(usuarioId, dados)
 obterPerfilAtleta(id)
 atualizarPerfilAtleta(id, dados)
+criarPerfilParceiro(usuarioId, dados)
 obterPerfilParceiro(id)
 atualizarPerfilParceiro(id, dados)
+criarResponsavel(usuarioId, dados)
+calcularIdade(dataNascimento, dataReferencia?)
+identificarMenor(dataNascimento, dataReferencia?)
+vincularResponsavel(atletaId, responsavelId)
+obterAtletasDoResponsavel(responsavelId)
+atualizarAtletaComoResponsavel(responsavelId, atletaId, dados)
 ```
 
 ### Oportunidades
@@ -167,7 +219,10 @@ criarOportunidade(dados)
 atualizarOportunidade(id, dados)
 encerrarOportunidade(id)
 listarOportunidadesDoParceiro(parceiroId, filtros)
+listarDocumentosNecessarios(oportunidadeId)
 ```
+
+Filtros P0: texto, modalidade, categoria, localização, status e prazo aberto.
 
 ### Candidaturas
 
@@ -178,6 +233,9 @@ listarCandidaturasDoAtleta(atletaId, filtros)
 listarCandidatosDaOportunidade(oportunidadeId, filtros)
 atualizarStatusDaCandidatura(id, status)
 enviarDocumento(candidaturaId, documento)
+verificarCandidaturaExistente(oportunidadeId, atletaId)
+listarHistoricoDaCandidatura(candidaturaId)
+registrarEventoDaCandidatura(candidaturaId, evento)
 ```
 
 ### Match Score
@@ -185,6 +243,49 @@ enviarDocumento(candidaturaId, documento)
 ```text
 calcularMatchScore(atletaId, oportunidadeId)
 obterMatchScore(atletaId, oportunidadeId)
+avaliarElegibilidade(atletaId, oportunidadeId)
+```
+
+## Transições P0 da candidatura
+
+```text
+iniciada → inscrita
+inscrita → documentos_enviados
+inscrita → em_analise
+documentos_enviados → em_analise
+em_analise → aprovada
+em_analise → rejeitada
+```
+
+`aprovada` e `rejeitada` são estados finais durante o P0. Toda transição registra data, responsável, estado anterior e novo estado. Uma transição fora dessa lista deve falhar sem alterar os dados.
+
+## Respostas padronizadas
+
+Operações dos repositórios retornam:
+
+```text
+sucesso:
+  ok: true
+  data
+
+falha:
+  ok: false
+  codigo
+  mensagem
+  detalhes?
+```
+
+Códigos mínimos P0:
+
+```text
+NAO_AUTENTICADO
+SEM_PERMISSAO
+DADOS_INVALIDOS
+NAO_ENCONTRADO
+CANDIDATURA_DUPLICADA
+ATLETA_INELEGIVEL
+TRANSICAO_INVALIDA
+ERRO_DE_REDE
 ```
 
 ## Estados obrigatórios para a interface
@@ -211,3 +312,5 @@ Antes da implementação do Firebase, a equipe deve aprovar:
 - fórmula e versionamento do Match Score;
 - política de exclusão e retenção de dados;
 - necessidade de perfil administrativo.
+
+Os itens administrativos, avaliações técnicas e notificações permanecem fora do contrato congelado P0 e serão acrescentados de forma compatível na próxima versão.

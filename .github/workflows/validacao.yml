@@ -19,6 +19,24 @@ jobs:
       - name: Baixar código
         uses: actions/checkout@v4
 
+      - name: Verificar arquivos de ambiente versionados
+        shell: bash
+        run: |
+          tracked_env="$(git ls-files | grep -E '(^|/)\.env($|\.)' | grep -vE '(^|/)\.env\.example$' || true)"
+          if [ -n "$tracked_env" ]; then
+            echo "Arquivos de ambiente não permitidos:"
+            echo "$tracked_env"
+            exit 1
+          fi
+
+      - name: Impedir acesso direto ao Firebase pelas telas
+        shell: bash
+        run: |
+          if grep -R -n -E "from ['\"]firebase|require\(['\"]firebase" src/screens; then
+            echo "Telas devem acessar dados por contratos e repositórios."
+            exit 1
+          fi
+
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
@@ -27,6 +45,12 @@ jobs:
 
       - name: Instalar dependências
         run: npm ci
+
+      - name: Verificar contratos P0 em memória
+        run: npm run check:contracts
+
+      - name: Verificar painel de progresso
+        run: npm run progress -- --check
 
       - name: Validar exportação web
         run: npm run export:web

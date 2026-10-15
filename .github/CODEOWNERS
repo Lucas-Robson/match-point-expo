@@ -1,0 +1,16 @@
+# Renato é o revisor provisório enquanto os usuários de Maria, Marcelo e Laura
+# ainda não foram informados. Substituir pelas regras por área assim que possível.
+* @RenatoJose7
+
+/AGENTS.md @RenatoJose7
+/docs/ @RenatoJose7
+/.github/ @RenatoJose7
+/App.js @RenatoJose7
+/index.js @RenatoJose7
+/app.json @RenatoJose7
+/package.json @RenatoJose7
+/package-lock.json @RenatoJose7
+/src/data/ @RenatoJose7
+/src/domain/ @RenatoJose7
+/src/repositories/ @RenatoJose7
+/src/services/ @RenatoJose7
