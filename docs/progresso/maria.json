@@ -5,21 +5,21 @@
       "id": "RF01",
       "titulo": "Cadastro e login",
       "prioridade": "P0",
-      "status": "nao_iniciado",
+      "status": "em_andamento",
       "pr": "",
       "evidencia": "",
       "bloqueio": "",
-      "atualizadoEm": ""
+      "atualizadoEm": "2026-10-15T19:27:50.406Z"
     },
     {
       "id": "RF04",
       "titulo": "Cálculo de idade",
       "prioridade": "P0",
-      "status": "em_andamento",
-      "pr": "",
-      "evidencia": "",
+      "status": "concluido",
+      "pr": "#9",
+      "evidencia": "PR #9 integrada em develop; formato DD/MM/AAAA, validação, cálculo automático de idade e identificação de menor verificados no navegador.",
       "bloqueio": "",
-      "atualizadoEm": "2026-10-15T18:11:06.452Z"
+      "atualizadoEm": "2026-10-15T19:34:03.726Z"
     },
     {
       "id": "RF05",

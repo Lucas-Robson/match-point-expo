@@ -228,3 +228,39 @@ assumir a implementação do Firebase ou de rotas pertencentes ao Renato.
 - Próxima sequência sugerida: RF24/RF25 e integração de RF01; retomar RF04 após
   definir como transportar a data até a gravação do perfil. RF06/RF07 aguardam
   operações de convite/vínculo e acesso administrativo.
+
+### Atualização — implementação de RF01
+
+- Trabalho em andamento na branch `feat/maria-autenticacao`, derivada de
+  `origin/develop`; as alterações ainda não foram publicadas em uma PR.
+- Login e cadastro agora usam o contrato `repositories.authentication`,
+  apresentam erros e estado de envio e validam os campos antes de chamar o
+  repositório. A recuperação de senha funcional já está registrada na PR #13.
+- Formulários de atleta, treinador, instituição e responsável usam campos
+  controlados. A chamada de cadastro envia os dados do perfil correspondente.
+- Com autorização explícita da usuária, `src/repositories/firebase/index.js`
+  agora grava usuário e perfil inicial juntos em lote; em memória, o perfil é
+  salvo antes de publicar a sessão. Isso inclui data de nascimento do atleta,
+  documento/localização do parceiro e parentesco/documento/telefone do
+  responsável.
+- O perfil esportivo do atleta nasce como incompleto (`perfilCompleto: false`);
+  modalidade e demais dados esportivos continuam dependentes do fluxo RF03 do
+  Marcelo.
+- O fluxo de atleta menor identifica a idade, mas bloqueia a criação da conta
+  até haver vínculo confirmado do responsável. Isso preserva RF05 bloqueado
+  sem criar uma sessão de menor sem autorização.
+- Testes manuais com o provedor `memory`: login de atleta, cadastro de treinador
+  e de atleta adulto, rejeição de senhas divergentes, bloqueio de atleta menor
+  e ocultação de ambas as senhas. A verificação automatizada também cobre a
+  criação dos quatro tipos de perfil e rejeita data inválida/menor sem vínculo.
+  Nenhuma conta real foi criada nem operação Firebase executada.
+- RF04 foi marcado como `concluido` com evidência da PR #9 integrada em
+  `develop`; RF01 permanece `em_andamento` até validação final e publicação.
+- Pendências de RF01: concluir a revisão e as validações automatizadas, então
+  publicar a branch para revisão. A modalidade e os demais dados esportivos
+  continuam dependentes do fluxo RF03, sob responsabilidade do Marcelo.
+- As regras de segurança do Firestore não estão versionadas neste repositório;
+  o acesso de cada usuário à criação do próprio perfil precisa ser confirmado no
+  projeto Firebase antes de habilitar cadastros reais.
+- RF05, RF06 e RF07 continuam dependendo do contrato e das operações de convite,
+  vínculo e administração; não foram alteradas telas de outras áreas.
