@@ -218,8 +218,9 @@ Enquanto o bloqueio estiver ativo, ninguém mais altera o arquivo. O bloqueio te
 1. Criar ou assumir uma Issue.
 2. Informar a área, o resultado esperado e os arquivos que serão alterados.
 3. Conferir se nenhum desses arquivos está bloqueado.
-4. Atualizar a branch `develop` local.
-5. Criar uma branch exclusiva para a tarefa.
+4. Atualizar a branch `develop` local com `git fetch origin --prune`, `git switch develop` e `git pull --ff-only origin develop`.
+5. Conferir que o painel e os contratos consultados pertencem à `develop`, não à `main` ou a uma branch pessoal.
+6. Criar uma branch exclusiva para a tarefa a partir da `develop` atualizada.
 
 Exemplos de branches:
 
@@ -307,6 +308,25 @@ branch da tarefa → develop → validação integrada → main
 - branches de tarefa nascem da `develop` atualizada;
 - correções urgentes da versão estável usam `hotfix/...` e depois retornam também para `develop`;
 - `main` e `develop` devem ser protegidas contra envio direto.
+
+### 5.7 Fonte de verdade e recuperação de divergência
+
+Durante o desenvolvimento, a `develop` é a fonte de verdade para código integrado, contratos e `docs/PROGRESSO.md`. A `main` não deve ser usada como ponto de partida de uma tarefa, mesmo que tenha commits mais recentes.
+
+Antes de abrir uma branch, cada pessoa executa:
+
+```text
+git fetch origin --prune
+git switch develop
+git pull --ff-only origin develop
+git status --short --branch
+```
+
+O resultado deve indicar uma `develop` atualizada e sem alterações locais. Só então a pessoa cria a branch da tarefa.
+
+Se um commit entrar acidentalmente na `main`, não se deve enviar mudanças diretamente para `develop`, copiar arquivos, usar `reset` ou aplicar `cherry-pick` sem alinhamento. O Renato cria uma branch de sincronização a partir da `develop`, integra a `main` nessa branch e abre uma Pull Request com destino em `develop`. Em conflitos, a versão integrada mais nova da `develop` prevalece para dados de progresso, contratos e dependências; qualquer exceção deve ser revisada explicitamente.
+
+Depois do merge dessa Pull Request, toda a equipe atualiza a `develop` antes de continuar. A `main` só volta a receber alterações quando a versão da `develop` estiver validada como estável.
 
 ---
 
