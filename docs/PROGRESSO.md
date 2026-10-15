@@ -20,7 +20,7 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 | Maria | 0/7 | 0/7 | 1 | 1 |
 | Marcelo | 0/6 | 0/7 | 0 | 0 |
 | Laura | 0/3 | 0/6 | 0 | 0 |
-| Renato | 0/5 | 0/5 | 1 | 0 |
+| Renato | 0/5 | 0/5 | 5 | 0 |
 
 ## Requisitos
 
@@ -37,9 +37,9 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 | RF09 — Gerenciar oportunidades | P0 | Laura | Não iniciado | — | — |
 | RF10 — Pesquisa e filtros | P0 | Marcelo | Não iniciado | — | — |
 | RF11 — Detalhes da oportunidade | P0 | Marcelo | Não iniciado | — | — |
-| RF12 — Compatibilidade | P0 | Renato | Não iniciado | — | — |
-| RF13 — Elegibilidade | P0 | Renato | Não iniciado | — | — |
-| RF14 — Bloqueio da candidatura | P0 | Renato | Não iniciado | — | — |
+| RF12 — Compatibilidade | P0 | Renato | Em andamento | — | — |
+| RF13 — Elegibilidade | P0 | Renato | Em andamento | — | — |
+| RF14 — Bloqueio da candidatura | P0 | Renato | Em andamento | — | — |
 | RF15 — Realizar candidatura | P0 | Marcelo | Não iniciado | — | — |
 | RF16 — Enviar documentos | P0 | Marcelo | Não iniciado | — | — |
 | RF17 — Status e histórico do atleta | P0 | Marcelo | Não iniciado | — | — |
@@ -47,7 +47,7 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 | RF19 — Avaliação técnica | P1 | Laura | Não iniciado | — | — |
 | RF20 — Solicitar avaliação | P1 | Laura | Não iniciado | — | — |
 | RF21 — Decisão institucional | P0 | Laura | Não iniciado | — | — |
-| RF22 — Histórico das alterações | P0 | Renato | Não iniciado | — | — |
+| RF22 — Histórico das alterações | P0 | Renato | Em andamento | — | — |
 | RF23 — Notificações | P1 | Marcelo | Não iniciado | — | — |
 | RF24 — Mensagens operacionais | P0 | Maria | Não iniciado | — | — |
 | RF25 — Estados vazios | P0 | Maria | Não iniciado | — | — |
