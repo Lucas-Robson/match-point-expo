@@ -2,7 +2,7 @@
 
 > Arquivo gerado por `npm run progress`. Não edite esta página manualmente.
 
-Última atualização registrada: nenhuma atualização registrada
+Última atualização registrada: 2026-10-15T16:56:55.003Z
 
 ## Barras de progresso
 
@@ -20,14 +20,14 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 | Maria | 0/7 | 0/7 | 0 | 0 |
 | Marcelo | 0/6 | 0/7 | 0 | 0 |
 | Laura | 0/3 | 0/6 | 0 | 0 |
-| Renato | 0/5 | 0/5 | 0 | 0 |
+| Renato | 0/5 | 0/5 | 1 | 0 |
 
 ## Requisitos
 
 | RF | Prioridade | Responsável | Status | PR | Evidência ou bloqueio |
 | --- | --- | --- | --- | --- | --- |
 | RF01 — Cadastro e login | P0 | Maria | Não iniciado | — | — |
-| RF02 — Direcionamento por perfil | P0 | Renato | Não iniciado | — | — |
+| RF02 — Direcionamento por perfil | P0 | Renato | Em andamento | — | — |
 | RF03 — Perfil esportivo | P0 | Marcelo | Não iniciado | — | — |
 | RF04 — Cálculo de idade | P0 | Maria | Não iniciado | — | — |
 | RF05 — Identificação de menor | P0 | Maria | Não iniciado | — | — |
