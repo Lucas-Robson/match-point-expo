@@ -5,10 +5,12 @@ Estas regras se aplicam a qualquer IA que leia, analise ou altere este repositó
 ## Antes de fazer qualquer alteração
 
 1. Leia integralmente `docs/MANUAL_DE_COLABORACAO.md`.
-2. Se a tarefa envolver dados, autenticação, API ou banco, leia também `docs/CONTRATOS_DE_DADOS.md`.
-3. Identifique a área responsável e os arquivos autorizados pela solicitação.
-4. Verifique o estado atual dos arquivos antes de editar e preserve mudanças existentes.
-5. Declare quais arquivos pretende alterar quando o trabalho ultrapassar uma única tela ou componente.
+2. Durante o ciclo intensivo de três dias, leia também `docs/MANUAL_DO_PROJETO_3_DIAS.md` e identifique a prioridade P0, P1 ou P2.
+3. Se a tarefa envolver dados, autenticação, API ou banco, leia também `docs/CONTRATOS_DE_DADOS.md`.
+4. Identifique a área responsável e os arquivos autorizados pela solicitação.
+5. Verifique o estado atual dos arquivos antes de editar e preserve mudanças existentes.
+6. Declare quais arquivos pretende alterar quando o trabalho ultrapassar uma única tela ou componente.
+7. Antes de iniciar um requisito, atualize seu status no painel de progresso; antes de entregar, atualize novamente com PR e evidência.
 
 Se a solicitação conflitar com este documento, siga a solicitação explícita do usuário, mas informe claramente o conflito e o impacto.
 
@@ -43,6 +45,7 @@ Não instale, remova ou atualize dependências sem autorização do Renato.
 ## Conduta obrigatória
 
 - altere somente os arquivos necessários para a tarefa;
+- durante os três dias, não implemente P1 enquanto algum P0 estiver bloqueado por código e não implemente P2;
 - não faça refatorações, renomeações ou formatações em massa;
 - não mova arquivos de outra área;
 - não apague código aparentemente sem uso sem confirmar sua finalidade;
@@ -53,6 +56,31 @@ Não instale, remova ou atualize dependências sem autorização do Renato.
 - não sobrescreva mudanças locais de outra pessoa;
 - se precisar ultrapassar os limites da área, pare e registre a dependência ou o pedido entre áreas;
 - quando houver ambiguidade relevante, explique o bloqueio em vez de assumir uma alteração ampla.
+
+## Painel obrigatório de progresso
+
+O painel visível fica em `docs/PROGRESSO.md` e é gerado a partir dos arquivos individuais em `docs/progresso/`.
+
+Cada IA deve:
+
+1. alterar somente o requisito em que está trabalhando;
+2. usar `npm run progress -- set RFXX em_andamento` antes de começar;
+3. usar `bloqueado` com `--blocker` se ficar impedida de continuar;
+4. usar `em_revisao` com `--pr` ao abrir a Pull Request;
+5. usar `concluido` somente com `--pr` e `--evidence`, depois dos critérios de pronto;
+6. incluir no commit tanto o JSON do responsável quanto `docs/PROGRESSO.md`;
+7. nunca editar `docs/PROGRESSO.md` manualmente.
+
+Exemplos:
+
+```text
+npm run progress -- set RF09 em_andamento
+npm run progress -- set RF09 bloqueado --blocker "Aguardando contrato"
+npm run progress -- set RF09 em_revisao --pr "#12"
+npm run progress -- set RF09 concluido --pr "#12" --evidence "Roteiro 3 aprovado"
+```
+
+Itens `simulado` não avançam a barra. O estado `concluido` exige PR e evidência.
 
 ## Uso de Git e GitHub
 
@@ -69,6 +97,8 @@ Não instale, remova ou atualize dependências sem autorização do Renato.
 Depois de alterar código executável, rode:
 
 ```text
+npm run check:contracts
+npm run progress -- --check
 npm run export:web
 ```
 
