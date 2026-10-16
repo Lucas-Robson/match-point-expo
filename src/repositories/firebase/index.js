@@ -7,6 +7,7 @@ import {
   signOut,
 } from 'firebase/auth'
 import {
+  arrayUnion,
   collection,
   doc,
   getDoc,
@@ -395,22 +396,16 @@ export function createFirebaseRepositories() {
             }
 
             const guardianReference = doc(database, GUARDIANS_COLLECTION, invitation.responsavelId)
-            const guardianSnapshot = await transaction.get(guardianReference)
-            if (!guardianSnapshot.exists()) {
-              return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Responsável legal não encontrado.')
-            }
-
-            const guardian = normalizeDocument(guardianSnapshot)
-            const atletasVinculadosIds = [...new Set([...(guardian.atletasVinculadosIds ?? []), user.id])]
             const athlete = {
               ...profileResult.data.data,
-              responsavelId: guardian.id,
+              responsavelId: invitation.responsavelId,
+              vinculoResponsavelId: linkCode,
             }
 
             transaction.set(userReference, user)
             transaction.set(athleteReference, athlete)
             transaction.update(guardianReference, {
-              atletasVinculadosIds,
+              atletasVinculadosIds: arrayUnion(user.id),
               atualizadoEm: createdAt,
             })
             transaction.update(invitationReference, {
@@ -418,7 +413,7 @@ export function createFirebaseRepositories() {
               utilizadoPorAtletaId: user.id,
               utilizadoEm: createdAt,
             })
-            return success({ athlete, guardian: { ...guardian, atletasVinculadosIds } })
+            return success({ athlete, responsavelId: invitation.responsavelId })
           })
 
           if (!linkResult.ok) {

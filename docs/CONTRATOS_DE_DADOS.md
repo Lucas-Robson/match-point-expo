@@ -41,6 +41,7 @@ atualizadoEm
 id
 usuarioId
 responsavelId?
+vinculoResponsavelId?
 dataNascimento
 cpf?
 localizacao?
@@ -91,7 +92,8 @@ utilizadoEm?
 ```
 
 O código não contém dados pessoais, expira em 24 horas e pode ser consumido
-uma única vez.
+uma única vez. Depois do consumo, seu identificador permanece no perfil do
+atleta como prova técnica do vínculo, sem conceder novo acesso.
 
 ### Parceiro
 

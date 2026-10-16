@@ -127,6 +127,7 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
           dataNascimento: profile.dataNascimento,
           modalidade: profile.modalidade ?? '',
           responsavelId: guardianInvitation?.responsavelId,
+          vinculoResponsavelId: guardianInvitation?.codigo,
           perfilCompleto: false,
           criadoEm: createdAt,
           atualizadoEm: createdAt,
