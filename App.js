@@ -148,7 +148,7 @@ export default function App() {
   })
   const { width, height } = useWindowDimensions()
   const repositories = useMemo(() => createRepositories(), [])
-  const [screen, setScreen] = useState('opening')
+  const [route, setRoute] = useState({ name: 'opening', params: {} })
   const [session, setSession] = useState(null)
   const [sessionResolved, setSessionResolved] = useState(false)
   const transitionDirection = useRef(1)
@@ -162,32 +162,34 @@ export default function App() {
       setSessionResolved(true)
 
       if (!nextSession) {
-        setScreen('opening')
+        setRoute({ name: 'opening', params: {} })
         return
       }
 
       const destination = getHomeRouteForUser(nextSession)
       if (destination) {
         transitionDirection.current = 1
-        setScreen(destination)
+        setRoute({ name: destination, params: {} })
       }
     })
 
     return unsubscribe
   }, [repositories])
 
-  const go = next => {
-    if (!ROUTES[next] || next === screen) return
+  const screen = route.name
+
+  const go = (next, params = {}) => {
+    if (!ROUTES[next] || (next === screen && JSON.stringify(params) === JSON.stringify(route.params))) return
 
     const currentPosition = TAB_POSITION[screen]
     const nextPosition = TAB_POSITION[next]
     transitionDirection.current = Number.isFinite(currentPosition) && Number.isFinite(nextPosition) && nextPosition < currentPosition ? -1 : 1
-    setScreen(next)
+    setRoute({ name: next, params })
   }
 
   const back = () => {
     transitionDirection.current = -1
-    setScreen(HISTORY[screen] || 'opening')
+    setRoute({ name: HISTORY[screen] || 'opening', params: {} })
   }
 
   if ((!fontsLoaded && !fontError) || !sessionResolved) {
@@ -205,6 +207,7 @@ export default function App() {
           back={back}
           repositories={repositories}
           session={session}
+          routeParams={route.params}
         />
       </ScreenTransition>
     </View>
