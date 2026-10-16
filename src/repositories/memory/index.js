@@ -45,7 +45,7 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
   const findActiveGuardianInvite = (code) => state.guardianInvites.find((invitation) => (
     invitation.codigo === normalizeLinkCode(code)
     && invitation.status === 'ativo'
-    && new Date(invitation.expiraEm) > new Date()
+    && (invitation.expiraEmEpoch ?? new Date(invitation.expiraEm).getTime()) > Date.now()
   ))
   const currentSession = () => (currentUserId ? findUser(currentUserId) ?? null : null)
 
@@ -322,13 +322,15 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
       }
 
       const createdAt = now()
+      const expiration = Date.now() + (24 * 60 * 60 * 1000)
       const invitation = {
         id: nextId('convite-responsavel'),
         codigo: `MP${String(sequence++).padStart(6, '0')}`,
         responsavelId: guardianId,
         status: 'ativo',
         criadoEm: createdAt,
-        expiraEm: new Date(Date.now() + (24 * 60 * 60 * 1000)).toISOString(),
+        expiraEm: new Date(expiration).toISOString(),
+        expiraEmEpoch: expiration,
       }
       state.guardianInvites.push(invitation)
       return success(invitation)

@@ -106,9 +106,10 @@ function normalizeLinkCode(value) {
 }
 
 function isActiveGuardianInvite(invitation, referenceDate = now()) {
+  const expiration = invitation.expiraEmEpoch ?? new Date(invitation.expiraEm).getTime()
   return invitation.status === 'ativo'
-    && invitation.expiraEm
-    && new Date(invitation.expiraEm) > new Date(referenceDate)
+    && Number.isFinite(expiration)
+    && expiration > new Date(referenceDate).getTime()
 }
 
 function buildRegistrationProfile(type, userId, initialData, createdAt) {
@@ -659,6 +660,7 @@ export function createFirebaseRepositories() {
         }
 
         const createdAt = now()
+        const expiration = Date.now() + (24 * 60 * 60 * 1000)
         const code = newId(database, GUARDIAN_INVITES_COLLECTION)
           .replace(/[^a-z0-9]/gi, '')
           .slice(0, 10)
@@ -669,7 +671,8 @@ export function createFirebaseRepositories() {
           responsavelId: guardianId,
           status: 'ativo',
           criadoEm: createdAt,
-          expiraEm: new Date(Date.now() + (24 * 60 * 60 * 1000)).toISOString(),
+          expiraEm: new Date(expiration).toISOString(),
+          expiraEmEpoch: expiration,
         }
         await setDoc(doc(database, GUARDIAN_INVITES_COLLECTION, code), invitation)
         return success(invitation)

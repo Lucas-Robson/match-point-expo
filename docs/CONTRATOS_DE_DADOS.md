@@ -87,6 +87,7 @@ responsavelId
 status: ativo | utilizado
 criadoEm
 expiraEm
+expiraEmEpoch
 utilizadoPorAtletaId?
 utilizadoEm?
 ```
