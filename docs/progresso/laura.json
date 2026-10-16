@@ -25,11 +25,11 @@
       "id": "RF18",
       "titulo": "Visualizar candidatos",
       "prioridade": "P0",
-      "status": "nao_iniciado",
+      "status": "bloqueado",
       "pr": "",
       "evidencia": "",
-      "bloqueio": "",
-      "atualizadoEm": ""
+      "bloqueio": "Aguardando operação de repositório autorizada para exibir identificação pública mínima do candidato; regras atuais não permitem ao parceiro ler usuarios de outros usuários.",
+      "atualizadoEm": "2026-10-16T18:52:47.591Z"
     },
     {
       "id": "RF19",

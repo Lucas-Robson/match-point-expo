@@ -2,7 +2,7 @@
 
 > Arquivo gerado por `npm run progress`. Não edite esta página manualmente.
 
-Última atualização registrada: 2026-10-16T18:47:30.752Z
+Última atualização registrada: 2026-10-16T18:52:47.591Z
 
 ## Barras de progresso
 
@@ -19,7 +19,7 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 | --- | --- | --- | --- | --- |
 | Maria | 1/7 | 1/7 | 0 | 1 |
 | Marcelo | 0/6 | 0/7 | 3 | 3 |
-| Laura | 0/3 | 0/6 | 0 | 0 |
+| Laura | 0/3 | 0/6 | 0 | 1 |
 | Renato | 0/5 | 0/5 | 1 | 1 |
 
 ## Requisitos
@@ -43,7 +43,7 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 | RF15 — Realizar candidatura | P0 | Marcelo | Em andamento | — | ApplicationInfoScreen identifica o perfil pela sessão, aceita oportunidadeId/atletaId em routeParams ou lista oportunidades abertas quando o ID falta, verifica duplicidade e elegibilidade e cria candidatura pelo repositório; sucesso mostra o ID gerado. Validado em memória para sucesso, duplicidade e inelegibilidade; fluxo visual com usuário fictício confirmou seletor e bloqueio de duplicata; check:contracts, progress e export:web passaram. Firebase real ainda não validado. |
 | RF16 — Enviar documentos | P0 | Marcelo | Bloqueado | — | Aguardando consulta do perfil esportivo, routeParams funcional e contrato de upload para arquivo real |
 | RF17 — Status e histórico do atleta | P0 | Marcelo | Bloqueado | — | Aguardando consulta do perfil esportivo pelo usuário autenticado e vínculo entre candidatura e oportunidade |
-| RF18 — Visualizar candidatos | P0 | Laura | Não iniciado | — | — |
+| RF18 — Visualizar candidatos | P0 | Laura | Bloqueado | — | Aguardando operação de repositório autorizada para exibir identificação pública mínima do candidato; regras atuais não permitem ao parceiro ler usuarios de outros usuários. |
 | RF19 — Avaliação técnica | P1 | Laura | Não iniciado | — | — |
 | RF20 — Solicitar avaliação | P1 | Laura | Não iniciado | — | — |
 | RF21 — Decisão institucional | P0 | Laura | Não iniciado | — | — |
