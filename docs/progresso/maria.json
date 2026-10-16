@@ -5,11 +5,11 @@
       "id": "RF01",
       "titulo": "Cadastro e login",
       "prioridade": "P0",
-      "status": "em_andamento",
-      "pr": "",
+      "status": "em_revisao",
+      "pr": "#29",
       "evidencia": "",
       "bloqueio": "",
-      "atualizadoEm": "2026-10-16T18:25:59.815Z"
+      "atualizadoEm": "2026-10-16T18:28:16.890Z"
     },
     {
       "id": "RF04",
