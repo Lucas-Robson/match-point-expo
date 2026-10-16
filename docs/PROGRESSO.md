@@ -2,7 +2,7 @@
 
 > Arquivo gerado por `npm run progress`. Não edite esta página manualmente.
 
-Última atualização registrada: 2026-10-16T18:28:16.890Z
+Última atualização registrada: 2026-10-16T18:47:30.752Z
 
 ## Barras de progresso
 
@@ -34,7 +34,7 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 | RF06 — Vínculo do responsável | P0 | Maria | Não iniciado | — | — |
 | RF07 — Responsável administra atleta | P0 | Maria | Não iniciado | — | — |
 | RF08 — Verificação de parceiros | P1 | Laura | Não iniciado | — | — |
-| RF09 — Gerenciar oportunidades | P0 | Laura | Não iniciado | — | — |
+| RF09 — Gerenciar oportunidades | P0 | Laura | Em revisão | #30 | — |
 | RF10 — Pesquisa e filtros | P0 | Marcelo | Em andamento | — | — |
 | RF11 — Detalhes da oportunidade | P0 | Marcelo | Bloqueado | — | Aguardando rota com routeParams e operação Firebase para obter oportunidade por ID |
 | RF12 — Compatibilidade | P0 | Renato | Em andamento | — | — |
