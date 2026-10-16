@@ -139,14 +139,56 @@ const guardianProfile = await signupRepositories.users.obterAtletasDoResponsavel
 assert.equal(guardianProfile.ok, true)
 assert.deepEqual(guardianProfile.data, [])
 
+const guardianProfileByUser = await signupRepositories.users.obterPerfilResponsavelPorUsuario(guardianSignup.data.id)
+assert.equal(guardianProfileByUser.ok, true)
+
+const unlinkedMinorSignup = await signupRepositories.authentication.cadastrar(
+  'menor.sem.codigo@matchpoint.example',
+  'demo-local',
+  USER_TYPES.ATHLETE,
+  { nome: 'Atleta sem vínculo', perfil: { dataNascimento: '2010-10-15' } },
+)
+assert.equal(unlinkedMinorSignup.ok, false)
+assert.equal(observedSession.id, guardianSignup.data.id)
+
+const guardianInvitation = await signupRepositories.users.gerarCodigoVinculoResponsavel(guardianProfileByUser.data.id)
+assert.equal(guardianInvitation.ok, true)
+
 const minorSignup = await signupRepositories.authentication.cadastrar(
   'novo.menor@matchpoint.example',
   'demo-local',
   USER_TYPES.ATHLETE,
-  { nome: 'Atleta Menor', perfil: { dataNascimento: '2010-10-15' } },
+  {
+    nome: 'Atleta Menor',
+    perfil: {
+      dataNascimento: '2010-10-15',
+      codigoResponsavel: guardianInvitation.data.codigo,
+    },
+  },
 )
-assert.equal(minorSignup.ok, false)
-assert.equal(observedSession.id, guardianSignup.data.id)
+assert.equal(minorSignup.ok, true)
+assert.equal(observedSession.id, minorSignup.data.id)
+const linkedMinor = await signupRepositories.users.obterPerfilAtletaPorUsuario(minorSignup.data.id)
+assert.equal(linkedMinor.ok, true)
+assert.equal(linkedMinor.data.responsavelId, guardianProfileByUser.data.id)
+const linkedAthletes = await signupRepositories.users.obterAtletasDoResponsavel(guardianProfileByUser.data.id)
+assert.equal(linkedAthletes.ok, true)
+assert.equal(linkedAthletes.data.some((athlete) => athlete.id === linkedMinor.data.id), true)
+
+const reusedInvitationSignup = await signupRepositories.authentication.cadastrar(
+  'outro.menor@matchpoint.example',
+  'demo-local',
+  USER_TYPES.ATHLETE,
+  {
+    nome: 'Outro Atleta Menor',
+    perfil: {
+      dataNascimento: '2011-10-15',
+      codigoResponsavel: guardianInvitation.data.codigo,
+    },
+  },
+)
+assert.equal(reusedInvitationSignup.ok, false)
+assert.equal(observedSession.id, minorSignup.data.id)
 const invalidBirthDateSignup = await signupRepositories.authentication.cadastrar(
   'data.invalida@matchpoint.example',
   'demo-local',

@@ -77,6 +77,22 @@ Regras P0:
 - o responsável consulta e altera somente atletas presentes em `atletasVinculadosIds`;
 - o vínculo deve ser validado dos dois lados antes de concluir o cadastro.
 
+### Código de vínculo do responsável
+
+```text
+id
+codigo
+responsavelId
+status: ativo | utilizado
+criadoEm
+expiraEm
+utilizadoPorAtletaId?
+utilizadoEm?
+```
+
+O código não contém dados pessoais, expira em 24 horas e pode ser consumido
+uma única vez.
+
 ### Parceiro
 
 Representa treinador ou instituição.
@@ -194,7 +210,7 @@ observarSessao(callback)
 tipo da conta:
 
 ```text
-atleta:      { dataNascimento, modalidade? }
+atleta:      { dataNascimento, modalidade?, codigoResponsavel? }
 treinador:   { nomeExibicao, documento?, descricao?, localizacao? }
 instituicao: { nomeExibicao, documento?, descricao?, localizacao? }
 responsavel: { parentesco, documento?, telefone? }
@@ -220,12 +236,20 @@ obterPerfilParceiro(id)
 obterPerfilParceiroPorUsuario(usuarioId)
 atualizarPerfilParceiro(id, dados)
 criarResponsavel(usuarioId, dados)
+obterPerfilResponsavelPorUsuario(usuarioId)
+gerarCodigoVinculoResponsavel(responsavelId)
 calcularIdade(dataNascimento, dataReferencia?)
 identificarMenor(dataNascimento, dataReferencia?)
 vincularResponsavel(atletaId, responsavelId)
 obterAtletasDoResponsavel(responsavelId)
 atualizarAtletaComoResponsavel(responsavelId, atletaId, dados)
 ```
+
+O responsável autenticado gera um código de vínculo com validade de 24 horas.
+O código é de uso único e deve ser informado em `codigoResponsavel` durante o
+cadastro de um atleta menor. O cadastro consome o código e atualiza atleta e
+responsável na mesma operação; códigos inválidos, expirados ou já utilizados
+não criam a conta do atleta.
 
 ### Oportunidades
 
