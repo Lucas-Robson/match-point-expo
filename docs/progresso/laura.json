@@ -25,11 +25,11 @@
       "id": "RF18",
       "titulo": "Visualizar candidatos",
       "prioridade": "P0",
-      "status": "em_andamento",
-      "pr": "#33",
-      "evidencia": "Lista anonimizável em revisão; perfil esportivo mínimo e rota central dependem do Renato.",
+      "status": "em_revisao",
+      "pr": "#35",
+      "evidencia": "Lista e retrato público do candidato em revisão; integração das rotas centrais pendente com Renato.",
       "bloqueio": "",
-      "atualizadoEm": "2026-10-16T19:24:12.080Z"
+      "atualizadoEm": "2026-10-16T19:27:07.851Z"
     },
     {
       "id": "RF19",
