@@ -213,6 +213,7 @@ obterUsuarioAtual()
 atualizarUsuario(id, dados)
 criarPerfilAtleta(usuarioId, dados)
 obterPerfilAtleta(id)
+obterPerfilAtletaPorUsuario(usuarioId)
 atualizarPerfilAtleta(id, dados)
 criarPerfilParceiro(usuarioId, dados)
 obterPerfilParceiro(id)
@@ -252,6 +253,21 @@ verificarCandidaturaExistente(oportunidadeId, atletaId)
 listarHistoricoDaCandidatura(candidaturaId)
 registrarEventoDaCandidatura(candidaturaId, evento)
 ```
+
+### Arquivos de candidatura
+
+```text
+storage.enviarArquivoCandidatura(candidaturaId, documento)
+```
+
+`documento` aceita `arquivo` (um `File`/`Blob` no navegador ou um objeto com
+`uri`, `name` e `type` no aplicativo), além de `nome`, `tipo` e `tipoMime`. A
+operação retorna os metadados sem o conteúdo bruto e inclui `id`, `nome` e
+`arquivoUrl`.
+
+`applications.enviarDocumento(candidaturaId, documento)` é o fluxo completo:
+faz o upload quando necessário e associa o resultado à candidatura. Também
+aceita os metadados já retornados por `storage.enviarArquivoCandidatura`.
 
 ### Match Score
 
