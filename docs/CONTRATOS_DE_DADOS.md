@@ -190,6 +190,21 @@ obterSessaoAtual()
 observarSessao(callback)
 ```
 
+`dadosIniciais` pode conter `nome`, `telefone` e o perfil inicial associado ao
+tipo da conta:
+
+```text
+atleta:      { dataNascimento, modalidade? }
+treinador:   { nomeExibicao, documento?, descricao?, localizacao? }
+instituicao: { nomeExibicao, documento?, descricao?, localizacao? }
+responsavel: { parentesco, documento?, telefone? }
+```
+
+O cadastro grava o usuário e seu perfil inicial de forma atômica, usando o mesmo
+ID nos dois registros. A sessão só é publicada depois que ambos forem salvos.
+Atletas menores não podem concluir esse cadastro antes da confirmação do
+vínculo do responsável legal.
+
 ### Usuários e perfis
 
 ```text
@@ -198,6 +213,7 @@ obterUsuarioAtual()
 atualizarUsuario(id, dados)
 criarPerfilAtleta(usuarioId, dados)
 obterPerfilAtleta(id)
+obterPerfilAtletaPorUsuario(usuarioId)
 atualizarPerfilAtleta(id, dados)
 criarPerfilParceiro(usuarioId, dados)
 obterPerfilParceiro(id)
@@ -237,6 +253,21 @@ verificarCandidaturaExistente(oportunidadeId, atletaId)
 listarHistoricoDaCandidatura(candidaturaId)
 registrarEventoDaCandidatura(candidaturaId, evento)
 ```
+
+### Arquivos de candidatura
+
+```text
+storage.enviarArquivoCandidatura(candidaturaId, documento)
+```
+
+`documento` aceita `arquivo` (um `File`/`Blob` no navegador ou um objeto com
+`uri`, `name` e `type` no aplicativo), além de `nome`, `tipo` e `tipoMime`. A
+operação retorna os metadados sem o conteúdo bruto e inclui `id`, `nome` e
+`arquivoUrl`.
+
+`applications.enviarDocumento(candidaturaId, documento)` é o fluxo completo:
+faz o upload quando necessário e associa o resultado à candidatura. Também
+aceita os metadados já retornados por `storage.enviarArquivoCandidatura`.
 
 ### Match Score
 

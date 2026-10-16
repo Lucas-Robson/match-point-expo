@@ -2,14 +2,14 @@
 
 > Arquivo gerado por `npm run progress`. Não edite esta página manualmente.
 
-Última atualização registrada: 2026-10-15T19:21:43.059Z
+Última atualização registrada: 2026-10-16T16:26:05.289Z
 
 ## Barras de progresso
 
-- **P0:** `░░░░░░░░░░░░░░░░░░░░ 0% (0/21)`
+- **P0:** `█░░░░░░░░░░░░░░░░░░░ 5% (1/21)`
 - **P1:** `░░░░░░░░░░░░░░░░░░░░ 0% (0/4)`
 - **P2:** `░░░░░░░░░░░░░░░░░░░░ 0% (0/5)`
-- **Total:** `░░░░░░░░░░░░░░░░░░░░ 0% (0/30)`
+- **Total:** `█░░░░░░░░░░░░░░░░░░░ 3% (1/30)`
 
 Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens simulados não contam para os 70%.
 
@@ -17,8 +17,8 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 
 | Responsável | P0 concluído | Total concluído | Em andamento | Bloqueado |
 | --- | --- | --- | --- | --- |
-| Maria | 0/7 | 0/7 | 1 | 1 |
-| Marcelo | 0/6 | 0/7 | 1 | 5 |
+| Maria | 1/7 | 1/7 | 1 | 1 |
+| Marcelo | 0/6 | 0/7 | 2 | 4 |
 | Laura | 0/3 | 0/6 | 0 | 0 |
 | Renato | 0/5 | 0/5 | 5 | 0 |
 
@@ -26,10 +26,10 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 
 | RF | Prioridade | Responsável | Status | PR | Evidência ou bloqueio |
 | --- | --- | --- | --- | --- | --- |
-| RF01 — Cadastro e login | P0 | Maria | Não iniciado | — | — |
+| RF01 — Cadastro e login | P0 | Maria | Em andamento | — | — |
 | RF02 — Direcionamento por perfil | P0 | Renato | Em andamento | — | — |
-| RF03 — Perfil esportivo | P0 | Marcelo | Bloqueado | — | Aguardando método de repositório Firebase para localizar, criar e atualizar perfil esportivo pelo usuário autenticado |
-| RF04 — Cálculo de idade | P0 | Maria | Em andamento | — | — |
+| RF03 — Perfil esportivo | P0 | Marcelo | Em andamento | — | — |
+| RF04 — Cálculo de idade | P0 | Maria | Concluído | #9 | PR #9 integrada em develop; formato DD/MM/AAAA, validação, cálculo automático de idade e identificação de menor verificados no navegador. |
 | RF05 — Identificação de menor | P0 | Maria | Bloqueado | — | Aguardando contrato e operação de convite/código e vínculo do responsável no repositório; sem isso não é possível ativar o fluxo de menor de forma segura. |
 | RF06 — Vínculo do responsável | P0 | Maria | Não iniciado | — | — |
 | RF07 — Responsável administra atleta | P0 | Maria | Não iniciado | — | — |
