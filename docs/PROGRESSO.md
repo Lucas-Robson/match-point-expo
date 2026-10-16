@@ -2,7 +2,7 @@
 
 > Arquivo gerado por `npm run progress`. Não edite esta página manualmente.
 
-Última atualização registrada: 2026-10-16T17:26:10.935Z
+Última atualização registrada: 2026-10-16T17:33:22.825Z
 
 ## Barras de progresso
 
@@ -17,7 +17,7 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 
 | Responsável | P0 concluído | Total concluído | Em andamento | Bloqueado |
 | --- | --- | --- | --- | --- |
-| Maria | 1/7 | 1/7 | 1 | 1 |
+| Maria | 1/7 | 1/7 | 0 | 2 |
 | Marcelo | 0/6 | 0/7 | 2 | 4 |
 | Laura | 0/3 | 0/6 | 0 | 0 |
 | Renato | 0/5 | 0/5 | 5 | 0 |
@@ -26,7 +26,7 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 
 | RF | Prioridade | Responsável | Status | PR | Evidência ou bloqueio |
 | --- | --- | --- | --- | --- | --- |
-| RF01 — Cadastro e login | P0 | Maria | Em andamento | — | — |
+| RF01 — Cadastro e login | P0 | Maria | Bloqueado | — | Melhorias de formato e senha forte validadas e publicadas em feat/maria-cadastro-formatos-seguranca; aguardando criação manual da PR porque a sessão do GitHub está desautenticada. Link: https://github.com/RenatoJose7/match-point-expo/compare/develop...feat/maria-cadastro-formatos-seguranca?expand=1 |
 | RF02 — Direcionamento por perfil | P0 | Renato | Em andamento | — | — |
 | RF03 — Perfil esportivo | P0 | Marcelo | Em andamento | — | — |
 | RF04 — Cálculo de idade | P0 | Maria | Concluído | #9 | PR #9 integrada em develop; formato DD/MM/AAAA, validação, cálculo automático de idade e identificação de menor verificados no navegador. |
