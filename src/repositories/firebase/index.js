@@ -7,6 +7,7 @@ import {
   signOut,
 } from 'firebase/auth'
 import {
+  arrayUnion,
   collection,
   doc,
   getDoc,
@@ -35,6 +36,7 @@ const USERS_COLLECTION = 'usuarios'
 const ATHLETES_COLLECTION = 'atletas'
 const PARTNERS_COLLECTION = 'parceiros'
 const GUARDIANS_COLLECTION = 'responsaveis'
+const GUARDIAN_INVITES_COLLECTION = 'convitesResponsavel'
 const OPPORTUNITIES_COLLECTION = 'oportunidades'
 const APPLICATIONS_COLLECTION = 'candidaturas'
 const APPLICATION_KEYS_COLLECTION = 'chavesCandidatura'
@@ -99,6 +101,17 @@ function isValidBirthDate(value) {
     && calculateAge(value) !== null
 }
 
+function normalizeLinkCode(value) {
+  return String(value ?? '').trim().toUpperCase()
+}
+
+function isActiveGuardianInvite(invitation, referenceDate = now()) {
+  const expiration = invitation.expiraEmEpoch ?? new Date(invitation.expiraEm).getTime()
+  return invitation.status === 'ativo'
+    && Number.isFinite(expiration)
+    && expiration > new Date(referenceDate).getTime()
+}
+
 function buildRegistrationProfile(type, userId, initialData, createdAt) {
   const profile = initialData.perfil ?? {}
   const base = {
@@ -112,8 +125,8 @@ function buildRegistrationProfile(type, userId, initialData, createdAt) {
     if (!isValidBirthDate(profile.dataNascimento)) {
       return failure(REPOSITORY_ERROR_CODES.INVALID_DATA, 'Informe uma data de nascimento válida para o perfil do atleta.')
     }
-    if (isMinor(profile.dataNascimento)) {
-      return failure(REPOSITORY_ERROR_CODES.INVALID_DATA, 'O perfil de atleta menor exige vínculo confirmado com o responsável legal.')
+    if (isMinor(profile.dataNascimento) && !normalizeLinkCode(profile.codigoResponsavel)) {
+      return failure(REPOSITORY_ERROR_CODES.INVALID_DATA, 'Informe o código do responsável legal para cadastrar um atleta menor.')
     }
 
     return success({
@@ -289,6 +302,21 @@ export function createFirebaseRepositories() {
     }
   }
 
+  const getGuardianByUserId = async (userId) => {
+    try {
+      const snapshots = await getDocs(query(
+        collection(database, GUARDIANS_COLLECTION),
+        where('usuarioId', '==', userId),
+      ))
+      const guardianSnapshot = snapshots.docs[0]
+      return guardianSnapshot
+        ? success(normalizeDocument(guardianSnapshot))
+        : failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Perfil de responsável não encontrado para este usuário.')
+    } catch (error) {
+      return mapFirebaseError(error)
+    }
+  }
+
   const getOpportunityById = async (id) => {
     try {
       const snapshot = await getDoc(doc(database, OPPORTUNITIES_COLLECTION, id))
@@ -348,12 +376,70 @@ export function createFirebaseRepositories() {
           return profileResult
         }
 
-        const batch = writeBatch(database)
-        batch.set(doc(database, USERS_COLLECTION, user.id), user)
-        if (profileResult.data) {
-          batch.set(doc(database, profileResult.data.collection, user.id), profileResult.data.data)
+        const minorRegistration = type === USER_TYPES.ATHLETE
+          && isMinor(profileResult.data?.data?.dataNascimento)
+
+        if (minorRegistration) {
+          const linkCode = normalizeLinkCode(initialData.perfil?.codigoResponsavel)
+          const invitationReference = doc(database, GUARDIAN_INVITES_COLLECTION, linkCode)
+          const userReference = doc(database, USERS_COLLECTION, user.id)
+          const athleteReference = doc(database, ATHLETES_COLLECTION, user.id)
+
+          const linkResult = await runTransaction(database, async (transaction) => {
+            const invitationSnapshot = await transaction.get(invitationReference)
+            if (!invitationSnapshot.exists()) {
+              return failure(REPOSITORY_ERROR_CODES.INVALID_DATA, 'Código de responsável inválido ou expirado.')
+            }
+
+            const invitation = normalizeDocument(invitationSnapshot)
+            if (!isActiveGuardianInvite(invitation, createdAt)) {
+              return failure(REPOSITORY_ERROR_CODES.INVALID_DATA, 'Código de responsável inválido, expirado ou já utilizado.')
+            }
+
+            const guardianReference = doc(database, GUARDIANS_COLLECTION, invitation.responsavelId)
+            const athlete = {
+              ...profileResult.data.data,
+              responsavelId: invitation.responsavelId,
+              vinculoResponsavelId: linkCode,
+            }
+
+            transaction.set(userReference, user)
+            transaction.set(athleteReference, athlete)
+            transaction.update(guardianReference, {
+              atletasVinculadosIds: arrayUnion(user.id),
+              atualizadoEm: createdAt,
+            })
+            transaction.update(invitationReference, {
+              status: 'utilizado',
+              utilizadoPorAtletaId: user.id,
+              utilizadoEm: createdAt,
+            })
+            return success({ athlete, responsavelId: invitation.responsavelId })
+          })
+
+          if (!linkResult.ok) {
+            try {
+              await deleteUser(credential.user)
+            } catch (rollbackError) {
+              registrationInProgress = false
+              incompleteRegistrationIds.add(credential.user.uid)
+              return failure(
+                REPOSITORY_ERROR_CODES.NETWORK_ERROR,
+                'Não foi possível concluir o vínculo e a conta não pôde ser removida automaticamente. Entre em contato com o suporte.',
+                { rollbackCode: rollbackError?.code },
+              )
+            }
+            registrationInProgress = false
+            return linkResult
+          }
+        } else {
+          const batch = writeBatch(database)
+          batch.set(doc(database, USERS_COLLECTION, user.id), user)
+          if (profileResult.data) {
+            batch.set(doc(database, profileResult.data.collection, user.id), profileResult.data.data)
+          }
+          await batch.commit()
         }
-        await batch.commit()
       } catch (error) {
         if (credential?.user) {
           try {
@@ -556,31 +642,46 @@ export function createFirebaseRepositories() {
         return mapFirebaseError(error)
       }
     },
-    calcularIdade: async (birthDate, referenceDate) => success(calculateAge(birthDate, referenceDate)),
-    identificarMenor: async (birthDate, referenceDate) => success(isMinor(birthDate, referenceDate)),
-    vincularResponsavel: async (athleteId, guardianId) => {
-      const athleteReference = doc(database, ATHLETES_COLLECTION, athleteId)
-      const guardianReference = doc(database, GUARDIANS_COLLECTION, guardianId)
+    obterPerfilResponsavelPorUsuario: getGuardianByUserId,
+    gerarCodigoVinculoResponsavel: async (guardianId) => {
+      if (!auth.currentUser) {
+        return failure(REPOSITORY_ERROR_CODES.UNAUTHENTICATED, 'Nenhuma sessão ativa.')
+      }
+
       try {
-        return await runTransaction(database, async (transaction) => {
-          const [athleteSnapshot, guardianSnapshot] = await Promise.all([
-            transaction.get(athleteReference),
-            transaction.get(guardianReference),
-          ])
-          if (!athleteSnapshot.exists() || !guardianSnapshot.exists()) {
-            return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Atleta ou responsável não encontrado.')
-          }
-          const guardian = normalizeDocument(guardianSnapshot)
-          const athlete = { ...normalizeDocument(athleteSnapshot), responsavelId: guardianId }
-          const atletasVinculadosIds = [...new Set([...(guardian.atletasVinculadosIds ?? []), athleteId])]
-          transaction.update(athleteReference, { responsavelId: guardianId })
-          transaction.update(guardianReference, { atletasVinculadosIds, atualizadoEm: now() })
-          return success({ athlete, guardian: { ...guardian, atletasVinculadosIds } })
-        })
+        const guardianSnapshot = await getDoc(doc(database, GUARDIANS_COLLECTION, guardianId))
+        if (!guardianSnapshot.exists()) {
+          return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Responsável não encontrado.')
+        }
+
+        const guardian = normalizeDocument(guardianSnapshot)
+        if (guardian.usuarioId !== auth.currentUser.uid) {
+          return failure(REPOSITORY_ERROR_CODES.FORBIDDEN, 'Somente o responsável pode gerar o próprio código de vínculo.')
+        }
+
+        const createdAt = now()
+        const expiration = Date.now() + (24 * 60 * 60 * 1000)
+        const code = newId(database, GUARDIAN_INVITES_COLLECTION)
+          .replace(/[^a-z0-9]/gi, '')
+          .slice(0, 10)
+          .toUpperCase()
+        const invitation = {
+          id: code,
+          codigo: code,
+          responsavelId: guardianId,
+          status: 'ativo',
+          criadoEm: createdAt,
+          expiraEm: new Date(expiration).toISOString(),
+          expiraEmEpoch: expiration,
+        }
+        await setDoc(doc(database, GUARDIAN_INVITES_COLLECTION, code), invitation)
+        return success(invitation)
       } catch (error) {
         return mapFirebaseError(error)
       }
     },
+    calcularIdade: async (birthDate, referenceDate) => success(calculateAge(birthDate, referenceDate)),
+    identificarMenor: async (birthDate, referenceDate) => success(isMinor(birthDate, referenceDate)),
     obterAtletasDoResponsavel: async (guardianId) => {
       try {
         const guardianSnapshot = await getDoc(doc(database, GUARDIANS_COLLECTION, guardianId))

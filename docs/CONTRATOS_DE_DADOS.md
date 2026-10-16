@@ -41,6 +41,7 @@ atualizadoEm
 id
 usuarioId
 responsavelId?
+vinculoResponsavelId?
 dataNascimento
 cpf?
 localizacao?
@@ -76,6 +77,24 @@ Regras P0:
 - atleta com menos de 18 anos exige `responsavelId` válido;
 - o responsável consulta e altera somente atletas presentes em `atletasVinculadosIds`;
 - o vínculo deve ser validado dos dois lados antes de concluir o cadastro.
+
+### Código de vínculo do responsável
+
+```text
+id
+codigo
+responsavelId
+status: ativo | utilizado
+criadoEm
+expiraEm
+expiraEmEpoch
+utilizadoPorAtletaId?
+utilizadoEm?
+```
+
+O código não contém dados pessoais, expira em 24 horas e pode ser consumido
+uma única vez. Depois do consumo, seu identificador permanece no perfil do
+atleta como prova técnica do vínculo, sem conceder novo acesso.
 
 ### Parceiro
 
@@ -194,7 +213,7 @@ observarSessao(callback)
 tipo da conta:
 
 ```text
-atleta:      { dataNascimento, modalidade? }
+atleta:      { dataNascimento, modalidade?, codigoResponsavel? }
 treinador:   { nomeExibicao, documento?, descricao?, localizacao? }
 instituicao: { nomeExibicao, documento?, descricao?, localizacao? }
 responsavel: { parentesco, documento?, telefone? }
@@ -220,12 +239,22 @@ obterPerfilParceiro(id)
 obterPerfilParceiroPorUsuario(usuarioId)
 atualizarPerfilParceiro(id, dados)
 criarResponsavel(usuarioId, dados)
+obterPerfilResponsavelPorUsuario(usuarioId)
+gerarCodigoVinculoResponsavel(responsavelId)
 calcularIdade(dataNascimento, dataReferencia?)
 identificarMenor(dataNascimento, dataReferencia?)
-vincularResponsavel(atletaId, responsavelId)
 obterAtletasDoResponsavel(responsavelId)
 atualizarAtletaComoResponsavel(responsavelId, atletaId, dados)
 ```
+
+O responsável autenticado gera um código de vínculo com validade de 24 horas.
+O código é de uso único e deve ser informado em `codigoResponsavel` durante o
+cadastro de um atleta menor. O cadastro consome o código e atualiza atleta e
+responsável na mesma operação; códigos inválidos, expirados ou já utilizados
+não criam a conta do atleta.
+
+Não existe operação de vínculo direto por IDs. Todo novo vínculo deve nascer
+do consumo do código durante o cadastro do atleta menor.
 
 ### Oportunidades
 
