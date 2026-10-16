@@ -15,11 +15,11 @@
       "id": "RF09",
       "titulo": "Gerenciar oportunidades",
       "prioridade": "P0",
-      "status": "em_andamento",
-      "pr": "",
+      "status": "em_revisao",
+      "pr": "#30",
       "evidencia": "",
       "bloqueio": "",
-      "atualizadoEm": "2026-10-16T18:24:05.075Z"
+      "atualizadoEm": "2026-10-16T18:26:06.970Z"
     },
     {
       "id": "RF18",
