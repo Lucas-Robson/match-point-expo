@@ -1,0 +1,258 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwnUser(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function userType() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.tipo;
+    }
+
+    function isPartnerUser() {
+      return signedIn() && (userType() == 'treinador' || userType() == 'instituicao');
+    }
+
+    function ownsAthlete(athleteId) {
+      return signedIn()
+        && get(/databases/$(database)/documents/atletas/$(athleteId)).data.usuarioId == request.auth.uid;
+    }
+
+    function ownsGuardian(guardianId) {
+      return signedIn()
+        && get(/databases/$(database)/documents/responsaveis/$(guardianId)).data.usuarioId == request.auth.uid;
+    }
+
+    function ownsPartner(partnerId) {
+      return signedIn()
+        && get(/databases/$(database)/documents/parceiros/$(partnerId)).data.usuarioId == request.auth.uid;
+    }
+
+    function ownsOpportunity(opportunityId) {
+      return signedIn()
+        && ownsPartner(
+          get(/databases/$(database)/documents/oportunidades/$(opportunityId)).data.criadorId
+        );
+    }
+
+    function ownsApplicationAthlete(application) {
+      return ownsAthlete(application.atletaId);
+    }
+
+    function ownsApplicationOpportunity(application) {
+      return ownsOpportunity(application.oportunidadeId);
+    }
+
+    function guardianCanAccessAthlete(athlete) {
+      return athlete.responsavelId != null && ownsGuardian(athlete.responsavelId);
+    }
+
+    function validGuardianLinkAfter(guardianId) {
+      let athlete = getAfter(
+        /databases/$(database)/documents/atletas/$(request.auth.uid)
+      ).data;
+      let invitation = getAfter(
+        /databases/$(database)/documents/convitesResponsavel/$(athlete.vinculoResponsavelId)
+      ).data;
+      return athlete.usuarioId == request.auth.uid
+        && athlete.responsavelId == guardianId
+        && invitation.responsavelId == guardianId
+        && invitation.status == 'utilizado'
+        && invitation.utilizadoPorAtletaId == request.auth.uid;
+    }
+
+    function validApplicationStatus(status) {
+      return status in [
+        'iniciada',
+        'inscrita',
+        'documentos_enviados',
+        'em_analise',
+        'aprovada',
+        'rejeitada'
+      ];
+    }
+
+    match /usuarios/{userId} {
+      allow create: if isOwnUser(userId)
+        && request.resource.data.id == userId
+        && request.resource.data.tipo in [
+          'atleta',
+          'treinador',
+          'instituicao',
+          'responsavel',
+          'administrador'
+        ];
+      allow read: if isOwnUser(userId);
+      allow update: if isOwnUser(userId)
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.tipo == resource.data.tipo;
+      allow delete: if false;
+    }
+
+    match /atletas/{athleteId} {
+      allow create: if signedIn()
+        && request.resource.data.id == athleteId
+        && request.resource.data.usuarioId == request.auth.uid
+        && (
+          !('responsavelId' in request.resource.data)
+          || validGuardianLinkAfter(request.resource.data.responsavelId)
+        );
+      allow read: if signedIn()
+        && (
+          resource.data.usuarioId == request.auth.uid
+          || guardianCanAccessAthlete(resource.data)
+          || isPartnerUser()
+        );
+      allow update: if signedIn()
+        && (
+          resource.data.usuarioId == request.auth.uid
+          || guardianCanAccessAthlete(resource.data)
+        )
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.usuarioId == resource.data.usuarioId
+        && request.resource.data.get('responsavelId', null)
+          == resource.data.get('responsavelId', null)
+        && request.resource.data.get('vinculoResponsavelId', null)
+          == resource.data.get('vinculoResponsavelId', null);
+      allow delete: if false;
+    }
+
+    match /parceiros/{partnerId} {
+      allow create: if signedIn()
+        && request.resource.data.id == partnerId
+        && request.resource.data.usuarioId == request.auth.uid
+        && request.resource.data.tipo in ['treinador', 'instituicao'];
+      allow read: if signedIn();
+      allow update: if signedIn()
+        && resource.data.usuarioId == request.auth.uid
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.usuarioId == resource.data.usuarioId
+        && request.resource.data.tipo == resource.data.tipo;
+      allow delete: if false;
+    }
+
+    match /responsaveis/{guardianId} {
+      allow create: if signedIn()
+        && request.resource.data.id == guardianId
+        && request.resource.data.usuarioId == request.auth.uid;
+      allow read: if signedIn() && resource.data.usuarioId == request.auth.uid;
+      allow update: if signedIn()
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.usuarioId == resource.data.usuarioId
+        && (
+          (
+            resource.data.usuarioId == request.auth.uid
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['parentesco', 'documento', 'telefone', 'atualizadoEm'])
+          )
+          || (
+            validGuardianLinkAfter(guardianId)
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['atletasVinculadosIds', 'atualizadoEm'])
+            && request.resource.data.atletasVinculadosIds.size()
+              == resource.data.atletasVinculadosIds.size() + 1
+            && request.resource.data.atletasVinculadosIds
+              .hasAll(resource.data.atletasVinculadosIds)
+            && !resource.data.atletasVinculadosIds
+              .hasAny([request.auth.uid])
+            && request.resource.data.atletasVinculadosIds
+              .hasAny([request.auth.uid])
+          )
+        );
+      allow delete: if false;
+    }
+
+    match /convitesResponsavel/{linkCode} {
+      allow create: if signedIn()
+        && request.resource.data.id == linkCode
+        && request.resource.data.codigo == linkCode
+        && request.resource.data.status == 'ativo'
+        && request.resource.data.expiraEmEpoch is number
+        && request.resource.data.expiraEmEpoch > request.time.toMillis()
+        && ownsGuardian(request.resource.data.responsavelId);
+      allow get: if signedIn()
+        && (
+          ownsGuardian(resource.data.responsavelId)
+          || resource.data.status == 'ativo'
+        );
+      allow list: if false;
+      allow update: if signedIn()
+        && resource.data.status == 'ativo'
+        && resource.data.expiraEmEpoch > request.time.toMillis()
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.codigo == resource.data.codigo
+        && request.resource.data.responsavelId == resource.data.responsavelId
+        && request.resource.data.status == 'utilizado'
+        && request.resource.data.utilizadoPorAtletaId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'utilizadoPorAtletaId', 'utilizadoEm'])
+        && validGuardianLinkAfter(resource.data.responsavelId);
+      allow delete: if false;
+    }
+
+    match /oportunidades/{opportunityId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.id == opportunityId
+        && ownsPartner(request.resource.data.criadorId);
+      allow update: if signedIn()
+        && ownsPartner(resource.data.criadorId)
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.criadorId == resource.data.criadorId;
+      allow delete: if false;
+    }
+
+    match /candidaturas/{applicationId} {
+      allow create: if signedIn()
+        && request.resource.data.id == applicationId
+        && ownsApplicationAthlete(request.resource.data)
+        && request.resource.data.status == 'inscrita'
+        && validApplicationStatus(request.resource.data.status);
+      allow read: if signedIn()
+        && (
+          ownsApplicationAthlete(resource.data)
+          || ownsApplicationOpportunity(resource.data)
+          || guardianCanAccessAthlete(
+            get(/databases/$(database)/documents/atletas/$(resource.data.atletaId)).data
+          )
+        );
+      allow update: if signedIn()
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.atletaId == resource.data.atletaId
+        && request.resource.data.oportunidadeId == resource.data.oportunidadeId
+        && validApplicationStatus(request.resource.data.status)
+        && (
+          (
+            ownsApplicationAthlete(resource.data)
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['documentos', 'atualizadoEm'])
+          )
+          || (
+            ownsApplicationOpportunity(resource.data)
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'historico', 'atualizadoEm'])
+          )
+        );
+      allow delete: if false;
+    }
+
+    match /chavesCandidatura/{applicationKey} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+        && ownsAthlete(request.resource.data.atletaId)
+        && request.resource.data.candidaturaId is string
+        && request.resource.data.oportunidadeId is string;
+      allow update, delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

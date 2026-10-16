@@ -2,7 +2,7 @@
 
 > Arquivo gerado por `npm run progress`. Não edite esta página manualmente.
 
-Última atualização registrada: 2026-10-16T16:26:05.289Z
+Última atualização registrada: 2026-10-16T18:02:12.468Z
 
 ## Barras de progresso
 
@@ -17,8 +17,8 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 
 | Responsável | P0 concluído | Total concluído | Em andamento | Bloqueado |
 | --- | --- | --- | --- | --- |
-| Maria | 1/7 | 1/7 | 1 | 1 |
-| Marcelo | 0/6 | 0/7 | 2 | 4 |
+| Maria | 1/7 | 1/7 | 0 | 2 |
+| Marcelo | 0/6 | 0/7 | 3 | 3 |
 | Laura | 0/3 | 0/6 | 0 | 0 |
 | Renato | 0/5 | 0/5 | 5 | 0 |
 
@@ -26,7 +26,7 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 
 | RF | Prioridade | Responsável | Status | PR | Evidência ou bloqueio |
 | --- | --- | --- | --- | --- | --- |
-| RF01 — Cadastro e login | P0 | Maria | Em andamento | — | — |
+| RF01 — Cadastro e login | P0 | Maria | Bloqueado | — | Melhorias de formato e senha forte validadas e publicadas em feat/maria-cadastro-formatos-seguranca; aguardando criação manual da PR porque a sessão do GitHub está desautenticada. Link: https://github.com/RenatoJose7/match-point-expo/compare/develop...feat/maria-cadastro-formatos-seguranca?expand=1 |
 | RF02 — Direcionamento por perfil | P0 | Renato | Em andamento | — | — |
 | RF03 — Perfil esportivo | P0 | Marcelo | Em andamento | — | — |
 | RF04 — Cálculo de idade | P0 | Maria | Concluído | #9 | PR #9 integrada em develop; formato DD/MM/AAAA, validação, cálculo automático de idade e identificação de menor verificados no navegador. |
@@ -40,7 +40,7 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 | RF12 — Compatibilidade | P0 | Renato | Em andamento | — | — |
 | RF13 — Elegibilidade | P0 | Renato | Em andamento | — | — |
 | RF14 — Bloqueio da candidatura | P0 | Renato | Em andamento | — | — |
-| RF15 — Realizar candidatura | P0 | Marcelo | Bloqueado | — | Aguardando consulta do perfil esportivo pelo usuário autenticado e routeParams funcional no App |
+| RF15 — Realizar candidatura | P0 | Marcelo | Em andamento | — | ApplicationInfoScreen identifica o perfil pela sessão, aceita oportunidadeId/atletaId em routeParams ou lista oportunidades abertas quando o ID falta, verifica duplicidade e elegibilidade e cria candidatura pelo repositório; sucesso mostra o ID gerado. Validado em memória para sucesso, duplicidade e inelegibilidade; fluxo visual com usuário fictício confirmou seletor e bloqueio de duplicata; check:contracts, progress e export:web passaram. Firebase real ainda não validado. |
 | RF16 — Enviar documentos | P0 | Marcelo | Bloqueado | — | Aguardando consulta do perfil esportivo, routeParams funcional e contrato de upload para arquivo real |
 | RF17 — Status e histórico do atleta | P0 | Marcelo | Bloqueado | — | Aguardando consulta do perfil esportivo pelo usuário autenticado e vínculo entre candidatura e oportunidade |
 | RF18 — Visualizar candidatos | P0 | Laura | Não iniciado | — | — |
