@@ -2,7 +2,7 @@
 
 > Arquivo gerado por `npm run progress`. Não edite esta página manualmente.
 
-Última atualização registrada: 2026-10-16T18:17:03.845Z
+Última atualização registrada: 2026-10-16T18:24:05.075Z
 
 ## Barras de progresso
 
@@ -18,7 +18,7 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 | Responsável | P0 concluído | Total concluído | Em andamento | Bloqueado |
 | --- | --- | --- | --- | --- |
 | Maria | 1/7 | 1/7 | 0 | 2 |
-| Marcelo | 0/6 | 0/7 | 2 | 4 |
+| Marcelo | 0/6 | 0/7 | 3 | 3 |
 | Laura | 0/3 | 0/6 | 1 | 0 |
 | Renato | 0/5 | 0/5 | 1 | 1 |
 
@@ -40,7 +40,7 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 | RF12 — Compatibilidade | P0 | Renato | Em andamento | — | — |
 | RF13 — Elegibilidade | P0 | Renato | Em revisão | #26 | — |
 | RF14 — Bloqueio da candidatura | P0 | Renato | Em revisão | #26 | — |
-| RF15 — Realizar candidatura | P0 | Marcelo | Bloqueado | — | Aguardando consulta do perfil esportivo pelo usuário autenticado e routeParams funcional no App |
+| RF15 — Realizar candidatura | P0 | Marcelo | Em andamento | — | ApplicationInfoScreen identifica o perfil pela sessão, aceita oportunidadeId/atletaId em routeParams ou lista oportunidades abertas quando o ID falta, verifica duplicidade e elegibilidade e cria candidatura pelo repositório; sucesso mostra o ID gerado. Validado em memória para sucesso, duplicidade e inelegibilidade; fluxo visual com usuário fictício confirmou seletor e bloqueio de duplicata; check:contracts, progress e export:web passaram. Firebase real ainda não validado. |
 | RF16 — Enviar documentos | P0 | Marcelo | Bloqueado | — | Aguardando consulta do perfil esportivo, routeParams funcional e contrato de upload para arquivo real |
 | RF17 — Status e histórico do atleta | P0 | Marcelo | Bloqueado | — | Aguardando consulta do perfil esportivo pelo usuário autenticado e vínculo entre candidatura e oportunidade |
 | RF18 — Visualizar candidatos | P0 | Laura | Não iniciado | — | — |
