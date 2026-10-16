@@ -29,6 +29,7 @@ function isValidBirthDate(value) {
 
 export function createMemoryRepositories(initialSeed = demoSeed) {
   let state = clone(initialSeed)
+  state.guardianInvites ??= []
   let currentUserId = null
   let sequence = 1
   const sessionListeners = new Set()
@@ -39,6 +40,13 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
   const findAthlete = (id) => state.athletes.find((athlete) => athlete.id === id)
   const findOpportunity = (id) => state.opportunities.find((opportunity) => opportunity.id === id)
   const findApplication = (id) => state.applications.find((application) => application.id === id)
+  const findGuardian = (id) => state.guardians.find((guardian) => guardian.id === id)
+  const normalizeLinkCode = (value) => String(value ?? '').trim().toUpperCase()
+  const findActiveGuardianInvite = (code) => state.guardianInvites.find((invitation) => (
+    invitation.codigo === normalizeLinkCode(code)
+    && invitation.status === 'ativo'
+    && (invitation.expiraEmEpoch ?? new Date(invitation.expiraEm).getTime()) > Date.now()
+  ))
   const currentSession = () => (currentUserId ? findUser(currentUserId) ?? null : null)
 
   const emitSession = () => {
@@ -101,19 +109,25 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
       const createdAt = user.criadoEm
       const profile = initialData.perfil ?? {}
       let profileResult = success(null)
+      let guardianInvitation = null
       if (type === USER_TYPES.ATHLETE) {
         if (!isValidBirthDate(profile.dataNascimento)) {
           state.users = state.users.filter((item) => item.id !== user.id)
           return failure(REPOSITORY_ERROR_CODES.INVALID_DATA, 'Informe uma data de nascimento válida para o perfil do atleta.')
         }
         if (isMinor(profile.dataNascimento)) {
-          state.users = state.users.filter((item) => item.id !== user.id)
-          return failure(REPOSITORY_ERROR_CODES.INVALID_DATA, 'O perfil de atleta menor exige vínculo confirmado com o responsável legal.')
+          guardianInvitation = findActiveGuardianInvite(profile.codigoResponsavel)
+          if (!guardianInvitation || !findGuardian(guardianInvitation.responsavelId)) {
+            state.users = state.users.filter((item) => item.id !== user.id)
+            return failure(REPOSITORY_ERROR_CODES.INVALID_DATA, 'Informe um código ativo de responsável legal.')
+          }
         }
         profileResult = await users.criarPerfilAtleta(user.id, {
           id: user.id,
           dataNascimento: profile.dataNascimento,
           modalidade: profile.modalidade ?? '',
+          responsavelId: guardianInvitation?.responsavelId,
+          vinculoResponsavelId: guardianInvitation?.codigo,
           perfilCompleto: false,
           criadoEm: createdAt,
           atualizadoEm: createdAt,
@@ -148,6 +162,14 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
       if (!profileResult.ok) {
         state.users = state.users.filter((item) => item.id !== user.id)
         return profileResult
+      }
+
+      if (guardianInvitation) {
+        Object.assign(guardianInvitation, {
+          status: 'utilizado',
+          utilizadoPorAtletaId: user.id,
+          utilizadoEm: now(),
+        })
       }
 
       currentUserId = user.id
@@ -281,18 +303,40 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
       state.guardians.push(guardian)
       return success(guardian)
     },
+    obterPerfilResponsavelPorUsuario: async (userId) => {
+      const guardian = state.guardians.find((item) => item.usuarioId === userId)
+      return guardian
+        ? success(guardian)
+        : failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Perfil de responsável não encontrado para este usuário.')
+    },
+    gerarCodigoVinculoResponsavel: async (guardianId) => {
+      const guardian = findGuardian(guardianId)
+      if (!currentUserId) {
+        return failure(REPOSITORY_ERROR_CODES.UNAUTHENTICATED, 'Nenhuma sessão ativa.')
+      }
+      if (!guardian) {
+        return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Responsável não encontrado.')
+      }
+      if (guardian.usuarioId !== currentUserId) {
+        return failure(REPOSITORY_ERROR_CODES.FORBIDDEN, 'Somente o responsável pode gerar o próprio código de vínculo.')
+      }
+
+      const createdAt = now()
+      const expiration = Date.now() + (24 * 60 * 60 * 1000)
+      const invitation = {
+        id: nextId('convite-responsavel'),
+        codigo: `MP${String(sequence++).padStart(6, '0')}`,
+        responsavelId: guardianId,
+        status: 'ativo',
+        criadoEm: createdAt,
+        expiraEm: new Date(expiration).toISOString(),
+        expiraEmEpoch: expiration,
+      }
+      state.guardianInvites.push(invitation)
+      return success(invitation)
+    },
     calcularIdade: async (birthDate, referenceDate) => success(calculateAge(birthDate, referenceDate)),
     identificarMenor: async (birthDate, referenceDate) => success(isMinor(birthDate, referenceDate)),
-    vincularResponsavel: async (athleteId, guardianId) => {
-      const athlete = findAthlete(athleteId)
-      const guardian = state.guardians.find((item) => item.id === guardianId)
-      if (!athlete || !guardian) {
-        return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Atleta ou responsável não encontrado.')
-      }
-      athlete.responsavelId = guardianId
-      if (!guardian.atletasVinculadosIds.includes(athleteId)) guardian.atletasVinculadosIds.push(athleteId)
-      return success({ athlete, guardian })
-    },
     obterAtletasDoResponsavel: async (guardianId) => {
       const guardian = state.guardians.find((item) => item.id === guardianId)
       if (!guardian) return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Responsável não encontrado.')
@@ -435,6 +479,8 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
       application.historico.push({
         id: nextId('evento'),
         status: application.status,
+        statusAnterior: null,
+        statusNovo: application.status,
         descricao: 'Candidatura realizada.',
         data: application.criadoEm,
         responsavelId: data.responsavelId ?? athleteId,
@@ -468,6 +514,8 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
       application.historico.push({
         id: nextId('evento'),
         status: nextStatus,
+        statusAnterior: previousStatus,
+        statusNovo: nextStatus,
         descricao: `${previousStatus} → ${nextStatus}`,
         data: application.atualizadoEm,
         responsavelId: responsibleId,

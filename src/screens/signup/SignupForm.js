@@ -1,10 +1,22 @@
 import React, { useState } from 'react'
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native'
+import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
 import { Button } from '../../components/ui/Button'
 import { Shell } from '../../components/ui/Shell'
 import { BLUE } from '../../theme/colors'
 import { USER_TYPES, calculateAge, isMinor } from '../../domain/contracts.js'
 import { styles } from '../../theme/styles'
+
+const BRAZIL_DDDS = [
+  '11', '12', '13', '14', '15', '16', '17', '18', '19',
+  '21', '22', '24', '27', '28',
+  '31', '32', '33', '34', '35', '37', '38',
+  '41', '42', '43', '44', '45', '46', '47', '48', '49',
+  '51', '53', '54', '55',
+  '61', '62', '63', '64', '65', '66', '67', '68', '69',
+  '71', '73', '74', '75', '77', '79',
+  '81', '82', '83', '84', '85', '86', '87', '88', '89',
+  '91', '92', '93', '94', '95', '96', '97', '98', '99',
+]
 
 function parseBirthDate(value) {
   const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
@@ -31,13 +43,112 @@ function formatBirthDate(value) {
   return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`
 }
 
+function formatDocument(field, value) {
+  const isCnpj = field.toLowerCase().includes('cnpj')
+  const digits = value.replace(/\D/g, '').slice(0, isCnpj ? 14 : 11)
+
+  if (isCnpj) {
+    if (digits.length <= 2) return digits
+    if (digits.length <= 5) return `${digits.slice(0, 2)}.${digits.slice(2)}`
+    if (digits.length <= 8) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`
+    if (digits.length <= 12) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`
+    return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12)}`
+  }
+
+  if (digits.length <= 3) return digits
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`
+}
+
+function formatPhoneNumber(value) {
+  const digits = value.replace(/\D/g, '').slice(0, 9)
+  if (digits.length <= 4) return digits
+  return `${digits.slice(0, digits.length - 4)}-${digits.slice(-4)}`
+}
+
+function formatPhone(ddd, number) {
+  return `+55 (${ddd}) ${number}`
+}
+
+function DddPicker({ visible, selectedDdd, onSelect, onClose }) {
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <View style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0, 0, 0, 0.55)', padding: 24 }}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Fechar seleção de DDD"
+          onPress={onClose}
+          style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
+        />
+        <View style={{ maxHeight: '78%', borderRadius: 12, backgroundColor: '#fff', padding: 18 }}>
+          <Text style={{ color: BLUE, fontFamily: 'Poppins_500Medium', fontSize: 18, marginBottom: 10 }}>
+            Selecione o DDD
+          </Text>
+          <ScrollView keyboardShouldPersistTaps="handled">
+            {BRAZIL_DDDS.map(ddd => (
+              <Pressable
+                key={ddd}
+                accessibilityRole="button"
+                accessibilityState={{ selected: selectedDdd === ddd }}
+                onPress={() => onSelect(ddd)}
+                style={{
+                  minHeight: 44,
+                  justifyContent: 'center',
+                  borderBottomWidth: 1,
+                  borderBottomColor: '#e4e7ec',
+                  paddingHorizontal: 8,
+                  backgroundColor: selectedDdd === ddd ? '#eff8ff' : '#fff',
+                }}
+              >
+                <Text style={{ color: BLUE, fontFamily: 'Poppins_400Regular', fontSize: 16 }}>
+                  +55 ({ddd})
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+          <Pressable accessibilityRole="button" onPress={onClose} style={{ padding: 12, alignItems: 'center' }}>
+            <Text style={{ color: BLUE, fontFamily: 'Poppins_500Medium' }}>Fechar</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  )
+}
+
 function Feedback({ status, children }) {
-  const color = status === 'error' ? '#b42318' : '#126b35'
+  const appearance = status === 'error'
+    ? { color: '#7a271a', backgroundColor: '#fef3f2', borderColor: '#fda29b', title: 'Atenção' }
+    : status === 'success'
+      ? { color: '#05603a', backgroundColor: '#ecfdf3', borderColor: '#6ce9a6', title: 'Sucesso' }
+      : { color: '#1849a9', backgroundColor: '#eff8ff', borderColor: '#84caff', title: 'Informação' }
 
   return (
-    <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={{ color, fontFamily: 'Poppins_400Regular', marginVertical: 8 }}>
-      {children}
-    </Text>
+    <View
+      accessibilityRole="alert"
+      accessibilityLiveRegion="polite"
+      style={{
+        backgroundColor: appearance.backgroundColor,
+        borderColor: appearance.borderColor,
+        borderLeftWidth: 5,
+        borderRadius: 8,
+        borderWidth: 1,
+        marginVertical: 8,
+        padding: 12,
+      }}
+    >
+      <Text style={{ color: appearance.color, fontFamily: 'Poppins_500Medium', marginBottom: 2 }}>
+        {appearance.title}
+      </Text>
+      <Text style={{ color: appearance.color, fontFamily: 'Poppins_400Regular' }}>
+        {children}
+      </Text>
+    </View>
   )
 }
 
@@ -51,14 +162,30 @@ export function SignupForm({ config, go, back, repositories }) {
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false)
   const [loading, setLoading] = useState(false)
   const [feedback, setFeedback] = useState(null)
+  const [selectedDdd, setSelectedDdd] = useState('')
+  const [dddPickerVisible, setDddPickerVisible] = useState(false)
   const birthDateField = fields.find(field => field === 'Data de nascimento')
   const birthDateInput = birthDateField ? values[birthDateField] ?? '' : ''
   const birthDate = isAthlete ? parseBirthDate(birthDateInput) : null
   const age = birthDate ? calculateAge(birthDate) : null
   const minor = birthDate ? isMinor(birthDate) : false
+  const passwordField = fields.find(field => field.toLowerCase().includes('senha') && !field.toLowerCase().includes('confirme'))
+  const passwordValue = values[passwordField] ?? ''
+  const hasStrongPassword = passwordValue.length >= 8
+    && /[a-z]/.test(passwordValue)
+    && /[A-Z]/.test(passwordValue)
+    && /\d/.test(passwordValue)
 
   const updateValue = (field, value) => {
-    setValues(current => ({ ...current, [field]: field === birthDateField ? formatBirthDate(value) : value }))
+    const lowerField = field.toLowerCase()
+    const formattedValue = field === birthDateField
+      ? formatBirthDate(value)
+      : /cpf|cnpj/i.test(field)
+        ? formatDocument(field, value)
+        : lowerField.includes('telefone')
+          ? formatPhoneNumber(value)
+          : value
+    setValues(current => ({ ...current, [field]: formattedValue }))
     setFeedback(null)
   }
 
@@ -66,7 +193,6 @@ export function SignupForm({ config, go, back, repositories }) {
     if (loading) return
 
     const emailField = fields.find(field => field.toLowerCase().includes('email'))
-    const passwordField = fields.find(field => field.toLowerCase().includes('senha') && !field.toLowerCase().includes('confirme'))
     const confirmationField = fields.find(field => field.toLowerCase().includes('confirme'))
     const nameField = fields.find(field => field.toLowerCase().includes('nome'))
     const phoneField = fields.find(field => field.toLowerCase().includes('telefone'))
@@ -97,6 +223,39 @@ export function SignupForm({ config, go, back, repositories }) {
       return
     }
 
+    if (!hasStrongPassword) {
+      setFeedback({
+        status: 'error',
+        message: 'Use uma senha com pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas e números.',
+      })
+      return
+    }
+
+    const documentValue = documentField ? values[documentField] ?? '' : ''
+    const documentDigits = documentValue.replace(/\D/g, '')
+    if (documentField && (documentDigits || !isOptionalField(documentField))
+      && documentDigits.length !== (documentField.toLowerCase().includes('cnpj') ? 14 : 11)) {
+      setFeedback({
+        status: 'error',
+        message: `${documentField.toUpperCase()} incompleto. Confira o número informado.`,
+      })
+      return
+    }
+
+    const phoneValue = phoneField ? values[phoneField] ?? '' : ''
+    const phoneDigits = phoneValue.replace(/\D/g, '')
+    const phoneRequired = phoneField && !isOptionalField(phoneField)
+    if (phoneField && (phoneDigits || phoneRequired)) {
+      if (!selectedDdd) {
+        setFeedback({ status: 'error', message: 'Selecione o DDD do telefone.' })
+        return
+      }
+      if (phoneDigits.length !== 8 && phoneDigits.length !== 9) {
+        setFeedback({ status: 'error', message: 'Informe um telefone com 8 ou 9 dígitos, sem o DDD.' })
+        return
+      }
+    }
+
     if (isAthlete && age === null) {
       setFeedback({ status: 'error', message: 'Informe uma data de nascimento válida para continuar.' })
       return
@@ -123,13 +282,13 @@ export function SignupForm({ config, go, back, repositories }) {
       : userType === USER_TYPES.GUARDIAN
         ? {
             parentesco: values[relationshipField]?.trim() ?? '',
-            documento: values[documentField]?.trim() || undefined,
-            telefone: values[phoneField]?.trim() || undefined,
+            documento: documentValue.trim() || undefined,
+            telefone: phoneDigits ? formatPhone(selectedDdd, phoneValue) : undefined,
           }
         : {
             tipo: userType,
             nomeExibicao: values[nameField]?.trim() ?? '',
-            documento: values[documentField]?.trim() || undefined,
+            documento: documentValue.trim() || undefined,
             localizacao: values[locationField]?.trim() || undefined,
             verificado: false,
           }
@@ -137,7 +296,7 @@ export function SignupForm({ config, go, back, repositories }) {
     try {
       const result = await repositories.authentication.cadastrar(email, password, userType, {
         nome: values[nameField]?.trim() ?? '',
-        telefone: values[phoneField]?.trim() ?? undefined,
+        telefone: phoneDigits ? formatPhone(selectedDdd, phoneValue) : undefined,
         perfil: profile,
       })
 
@@ -172,34 +331,98 @@ export function SignupForm({ config, go, back, repositories }) {
               const isBirthDate = field === birthDateField
               const normalizedField = field.toLowerCase()
               const isPassword = normalizedField.includes('senha')
+              const isPasswordConfirmation = normalizedField.includes('confirme')
+              const isPhone = normalizedField.includes('telefone')
+              const isDocument = /cpf|cnpj/i.test(field)
+              const isEmail = normalizedField.includes('email')
 
               return (
                 <React.Fragment key={field}>
-                  <TextInput
-                    placeholder={isBirthDate ? 'Data de nascimento (DD/MM/AAAA)' : field}
-                    placeholderTextColor={BLUE}
-                    secureTextEntry={isPassword}
-                    style={styles.signupInput}
-                    value={values[field] ?? ''}
-                    onChangeText={value => updateValue(field, value)}
-                    keyboardType={isBirthDate ? 'numeric' : normalizedField.includes('email') ? 'email-address' : 'default'}
-                    autoCapitalize={isPassword || normalizedField.includes('email') ? 'none' : 'sentences'}
-                    maxLength={isBirthDate ? 10 : undefined}
-                  />
-                  {isBirthDate && birthDate && age !== null && (
-                    <Text style={{ color: BLUE, fontFamily: 'Poppins_400Regular' }}>
-                      Idade calculada: {age} anos.
-                    </Text>
+                  {isPhone ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={selectedDdd ? `DDD ${selectedDdd}, alterar` : 'Selecionar DDD'}
+                        accessibilityState={{ expanded: dddPickerVisible }}
+                        onPress={() => setDddPickerVisible(true)}
+                        style={{
+                          height: 53,
+                          minWidth: 96,
+                          borderRadius: 8,
+                          backgroundColor: '#fff',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          paddingHorizontal: 10,
+                        }}
+                      >
+                        <Text style={{ color: BLUE, fontFamily: 'Poppins_400Regular', fontSize: 14 }}>
+                          {selectedDdd ? `+55 (${selectedDdd})` : 'DDD'}
+                        </Text>
+                      </Pressable>
+                      <TextInput
+                        accessibilityLabel="Telefone sem DDD"
+                        placeholder="Número"
+                        placeholderTextColor={BLUE}
+                        style={[styles.signupInput, { flex: 1, minWidth: 0, paddingHorizontal: 8, fontSize: 14 }]}
+                        value={values[field] ?? ''}
+                        onChangeText={value => updateValue(field, value)}
+                        keyboardType="phone-pad"
+                        autoComplete="off"
+                        maxLength={10}
+                      />
+                    </View>
+                  ) : (
+                    <TextInput
+                      placeholder={isBirthDate ? 'Data de nascimento (DD/MM/AAAA)' : field}
+                      placeholderTextColor={BLUE}
+                      secureTextEntry={isPassword}
+                      style={styles.signupInput}
+                      value={values[field] ?? ''}
+                      onChangeText={value => updateValue(field, value)}
+                      keyboardType={isBirthDate || isDocument ? 'numeric' : normalizedField.includes('email') ? 'email-address' : 'default'}
+                      autoCapitalize={isPassword || isEmail ? 'none' : 'sentences'}
+                      autoCorrect={false}
+                      autoComplete={isPassword ? 'new-password' : isEmail ? 'email' : 'off'}
+                      textContentType={isPassword ? 'newPassword' : undefined}
+                      maxLength={isBirthDate ? 10 : isDocument ? (normalizedField.includes('cnpj') ? 18 : 14) : undefined}
+                    />
+                  )}
+                  {isPassword && !isPasswordConfirmation && (
+                    <View style={{ borderRadius: 8, backgroundColor: '#fff', padding: 12, gap: 4 }}>
+                      <Text style={{ color: BLUE, fontFamily: 'Poppins_500Medium' }}>
+                        Senha forte
+                      </Text>
+                      <Text style={{ color: hasStrongPassword ? '#05603a' : BLUE, fontFamily: 'Poppins_400Regular', fontSize: 12 }}>
+                        {hasStrongPassword ? '✓' : '○'} Pelo menos 8 caracteres, com letras maiúsculas, minúsculas e números
+                      </Text>
+                      <Text style={{ color: '#475467', fontFamily: 'Poppins_400Regular', fontSize: 12 }}>
+                        Símbolos são recomendados para aumentar a segurança.
+                      </Text>
+                      <Text style={{ color: '#475467', fontFamily: 'Poppins_400Regular', fontSize: 12 }}>
+                        Seu aparelho ou navegador pode oferecer salvar a senha. O MatchPoint não a salva no perfil.
+                      </Text>
+                    </View>
+                  )}
+                  {isPhone && (
+                    <DddPicker
+                      visible={dddPickerVisible}
+                      selectedDdd={selectedDdd}
+                      onSelect={ddd => {
+                        setSelectedDdd(ddd)
+                        setDddPickerVisible(false)
+                      }}
+                      onClose={() => setDddPickerVisible(false)}
+                    />
                   )}
                   {isBirthDate && minor && (
-                    <Text style={{ color: '#126b35', fontFamily: 'Poppins_500Medium' }}>
+                    <Feedback status="info">
                       Atleta menor de 18 anos: será necessário vincular um responsável legal.
-                    </Text>
+                    </Feedback>
                   )}
                   {isBirthDate && birthDateInput.length > 0 && !birthDate && (
-                    <Text style={{ color: '#b42318', fontFamily: 'Poppins_400Regular' }}>
+                    <Feedback status="error">
                       Informe uma data válida no formato DD/MM/AAAA.
-                    </Text>
+                    </Feedback>
                   )}
                 </React.Fragment>
               )

@@ -15,11 +15,11 @@
       "id": "RF09",
       "titulo": "Gerenciar oportunidades",
       "prioridade": "P0",
-      "status": "bloqueado",
+      "status": "em_andamento",
       "pr": "",
       "evidencia": "",
-      "bloqueio": "Push negado por falta de permissão no remoto origin (HTTP 403); PR pendente.",
-      "atualizadoEm": "2026-10-16T17:28:26.397Z"
+      "bloqueio": "",
+      "atualizadoEm": "2026-10-16T18:17:03.845Z"
     },
     {
       "id": "RF18",
