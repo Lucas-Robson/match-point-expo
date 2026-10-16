@@ -5,11 +5,11 @@
       "id": "RF03",
       "titulo": "Perfil esportivo",
       "prioridade": "P0",
-      "status": "bloqueado",
+      "status": "em_andamento",
       "pr": "",
       "evidencia": "",
-      "bloqueio": "Aguardando método de repositório Firebase para localizar, criar e atualizar perfil esportivo pelo usuário autenticado",
-      "atualizadoEm": "2026-10-15T18:25:21.199Z"
+      "bloqueio": "",
+      "atualizadoEm": "2026-10-16T16:26:05.289Z"
     },
     {
       "id": "RF10",
