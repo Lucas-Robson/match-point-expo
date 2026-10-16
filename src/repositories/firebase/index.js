@@ -13,6 +13,7 @@ import {
   getDocs,
   query,
   runTransaction,
+  setDoc,
   updateDoc,
   where,
   writeBatch,
@@ -273,6 +274,21 @@ export function createFirebaseRepositories() {
     }
   }
 
+  const getPartnerByUserId = async (userId) => {
+    try {
+      const snapshots = await getDocs(query(
+        collection(database, PARTNERS_COLLECTION),
+        where('usuarioId', '==', userId),
+      ))
+      const partnerSnapshot = snapshots.docs[0]
+      return partnerSnapshot
+        ? success(normalizeDocument(partnerSnapshot))
+        : failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Perfil parceiro não encontrado para este usuário.')
+    } catch (error) {
+      return mapFirebaseError(error)
+    }
+  }
+
   const getOpportunityById = async (id) => {
     try {
       const snapshot = await getDoc(doc(database, OPPORTUNITIES_COLLECTION, id))
@@ -483,6 +499,12 @@ export function createFirebaseRepositories() {
       const user = await getUserById(userId)
       if (!user.ok) return user
 
+      const existingProfile = await getPartnerByUserId(userId)
+      if (existingProfile.ok) {
+        return failure(REPOSITORY_ERROR_CODES.INVALID_DATA, 'Este usuário já possui um perfil parceiro.')
+      }
+      if (existingProfile.codigo !== REPOSITORY_ERROR_CODES.NOT_FOUND) return existingProfile
+
       const partner = {
         id: newId(database, PARTNERS_COLLECTION),
         usuarioId: userId,
@@ -506,6 +528,7 @@ export function createFirebaseRepositories() {
         return mapFirebaseError(error)
       }
     },
+    obterPerfilParceiroPorUsuario: getPartnerByUserId,
     atualizarPerfilParceiro: async (id, data) => {
       try {
         await updateDoc(doc(database, PARTNERS_COLLECTION, id), { ...data, id })

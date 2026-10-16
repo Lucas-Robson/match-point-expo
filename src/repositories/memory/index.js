@@ -242,6 +242,9 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
     },
     criarPerfilParceiro: async (userId, data) => {
       if (!findUser(userId)) return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Usuário não encontrado.')
+      if (state.partners.some((partner) => partner.usuarioId === userId)) {
+        return failure(REPOSITORY_ERROR_CODES.INVALID_DATA, 'Este usuário já possui um perfil parceiro.')
+      }
       const partner = {
         id: nextId('parceiro'),
         usuarioId: userId,
@@ -254,6 +257,12 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
     obterPerfilParceiro: async (id) => {
       const partner = state.partners.find((item) => item.id === id)
       return partner ? success(partner) : failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Parceiro não encontrado.')
+    },
+    obterPerfilParceiroPorUsuario: async (userId) => {
+      const partner = state.partners.find((item) => item.usuarioId === userId)
+      return partner
+        ? success(partner)
+        : failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Perfil parceiro não encontrado para este usuário.')
     },
     atualizarPerfilParceiro: async (id, data) => {
       const partner = state.partners.find((item) => item.id === id)
