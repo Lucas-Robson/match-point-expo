@@ -55,6 +55,23 @@ export const APPLICATION_TRANSITIONS = Object.freeze({
   [APPLICATION_STATUS.REJECTED]: Object.freeze([]),
 })
 
+export function buildPublicCandidateProfile(user, athlete) {
+  return {
+    nome: user?.nome ?? '',
+    fotoUrl: user?.fotoUrl ?? null,
+    modalidade: athlete?.modalidade ?? '',
+    categoria: athlete?.categoria ?? null,
+    posicao: athlete?.posicao ?? null,
+    maoDominante: athlete?.maoDominante ?? null,
+    equipeAtual: athlete?.equipeAtual ?? null,
+    tempoDePratica: athlete?.tempoDePratica ?? null,
+    ranking: athlete?.ranking ?? null,
+    torneiosDisputados: athlete?.torneiosDisputados ?? null,
+    titulos: athlete?.titulos ?? null,
+    perfilCompleto: Boolean(athlete?.perfilCompleto),
+  }
+}
+
 export function calculateAge(birthDate, referenceDate = new Date()) {
   const birth = new Date(`${birthDate}T00:00:00`)
   const reference = new Date(referenceDate)

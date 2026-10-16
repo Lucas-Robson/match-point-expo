@@ -68,6 +68,71 @@ assert.equal(application.data.historico[0].statusAnterior, null)
 assert.equal(application.data.historico[0].statusNovo, APPLICATION_STATUS.SUBMITTED)
 assert.equal(application.data.historico[0].responsavelId, 'usuario-atleta-menor')
 
+const unauthenticatedProfile = await createMemoryRepositories().applications.obterPerfilPublicoCandidato(
+  'oportunidade-bolsa-tenis',
+  'atleta-adulto',
+)
+assert.equal(unauthenticatedProfile.ok, false)
+assert.equal(unauthenticatedProfile.codigo, REPOSITORY_ERROR_CODES.UNAUTHENTICATED)
+
+await repositories.authentication.entrar('instituicao@matchpoint.example', 'demo-local')
+const publicCandidateProfile = await repositories.applications.obterPerfilPublicoCandidato(
+  'oportunidade-bolsa-tenis',
+  'atleta-adulto',
+)
+assert.equal(publicCandidateProfile.ok, true)
+assert.equal(publicCandidateProfile.data.nome, 'Atleta Demo Adulto')
+assert.equal(publicCandidateProfile.data.modalidade, 'Tenis')
+assert.equal(publicCandidateProfile.data.categoria, 'Universitario')
+assert.deepEqual(Object.keys(publicCandidateProfile.data).sort(), [
+  'categoria',
+  'equipeAtual',
+  'fotoUrl',
+  'maoDominante',
+  'modalidade',
+  'nome',
+  'perfilCompleto',
+  'posicao',
+  'ranking',
+  'tempoDePratica',
+  'titulos',
+  'torneiosDisputados',
+].sort())
+assert.equal('email' in publicCandidateProfile.data, false)
+assert.equal('dataNascimento' in publicCandidateProfile.data, false)
+assert.equal('cpf' in publicCandidateProfile.data, false)
+assert.equal('responsavelId' in publicCandidateProfile.data, false)
+
+const newApplicantProfile = await repositories.applications.obterPerfilPublicoCandidato(
+  'oportunidade-bolsa-tenis',
+  'atleta-menor',
+)
+assert.equal(newApplicantProfile.ok, true)
+assert.equal(newApplicantProfile.data.nome, 'Atleta Demo Menor')
+
+const nonApplicantProfile = await repositories.applications.obterPerfilPublicoCandidato(
+  'oportunidade-futebol-incompativel',
+  'atleta-adulto',
+)
+assert.equal(nonApplicantProfile.ok, false)
+assert.equal(nonApplicantProfile.codigo, REPOSITORY_ERROR_CODES.NOT_FOUND)
+
+await repositories.authentication.entrar('treinador@matchpoint.example', 'demo-local')
+const otherPartnerProfile = await repositories.applications.obterPerfilPublicoCandidato(
+  'oportunidade-bolsa-tenis',
+  'atleta-adulto',
+)
+assert.equal(otherPartnerProfile.ok, false)
+assert.equal(otherPartnerProfile.codigo, REPOSITORY_ERROR_CODES.NOT_FOUND)
+
+await repositories.authentication.entrar('atleta.menor@matchpoint.example', 'demo-local')
+const athleteProfileAccess = await repositories.applications.obterPerfilPublicoCandidato(
+  'oportunidade-bolsa-tenis',
+  'atleta-adulto',
+)
+assert.equal(athleteProfileAccess.ok, false)
+assert.equal(athleteProfileAccess.codigo, REPOSITORY_ERROR_CODES.FORBIDDEN)
+
 const invalidTransition = await repositories.applications.atualizarStatusDaCandidatura(
   application.data.id,
   APPLICATION_STATUS.APPROVED,

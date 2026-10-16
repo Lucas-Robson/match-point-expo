@@ -25,6 +25,7 @@ import {
   OPPORTUNITY_STATUS,
   REPOSITORY_ERROR_CODES,
   USER_TYPES,
+  buildPublicCandidateProfile,
   canTransitionApplicationStatus,
   calculateAge,
   isMinor,
@@ -40,6 +41,7 @@ const GUARDIAN_INVITES_COLLECTION = 'convitesResponsavel'
 const OPPORTUNITIES_COLLECTION = 'oportunidades'
 const APPLICATIONS_COLLECTION = 'candidaturas'
 const APPLICATION_KEYS_COLLECTION = 'chavesCandidatura'
+const PUBLIC_CANDIDATE_PROFILES_SUBCOLLECTION = 'perfisCandidatos'
 
 function success(data) {
   return { ok: true, data }
@@ -845,6 +847,13 @@ export function createFirebaseRepositories() {
       )
       const athleteReference = doc(database, ATHLETES_COLLECTION, athleteId)
       const opportunityReference = doc(database, OPPORTUNITIES_COLLECTION, opportunityId)
+      const candidateProfileReference = doc(
+        database,
+        OPPORTUNITIES_COLLECTION,
+        opportunityId,
+        PUBLIC_CANDIDATE_PROFILES_SUBCOLLECTION,
+        athleteId,
+      )
 
       try {
         return await runTransaction(database, async (transaction) => {
@@ -878,6 +887,12 @@ export function createFirebaseRepositories() {
             )
           }
 
+          const athlete = normalizeDocument(athleteSnapshot)
+          const userSnapshot = await transaction.get(doc(database, USERS_COLLECTION, athlete.usuarioId))
+          if (!userSnapshot.exists()) {
+            return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Dados públicos do atleta não encontrados.')
+          }
+
           const event = {
             id: doc(collection(database, 'eventosCandidatura')).id,
             status: APPLICATION_STATUS.SUBMITTED,
@@ -900,6 +915,12 @@ export function createFirebaseRepositories() {
           }
 
           transaction.set(applicationReference, application)
+          transaction.set(candidateProfileReference, {
+            oportunidadeId: opportunityId,
+            atletaId: athleteId,
+            candidaturaId: application.id,
+            perfilPublico: buildPublicCandidateProfile(normalizeDocument(userSnapshot), athlete),
+          })
           transaction.set(keyReference, {
             candidaturaId: application.id,
             oportunidadeId: opportunityId,
@@ -938,6 +959,48 @@ export function createFirebaseRepositories() {
           .filter((application) => !filters.status || application.status === filters.status)
         return success(candidates)
       } catch (error) {
+        return mapFirebaseError(error)
+      }
+    },
+    obterPerfilPublicoCandidato: async (opportunityId, athleteId) => {
+      if (!auth.currentUser) {
+        return failure(REPOSITORY_ERROR_CODES.UNAUTHENTICATED, 'Nenhuma sessão ativa.')
+      }
+      if (!opportunityId || !athleteId) {
+        return failure(REPOSITORY_ERROR_CODES.INVALID_DATA, 'Informe a oportunidade e o atleta.')
+      }
+
+      const userResult = await getUserById(auth.currentUser.uid)
+      if (!userResult.ok) return userResult
+      if (![USER_TYPES.TRAINER, USER_TYPES.INSTITUTION].includes(userResult.data.tipo)) {
+        return failure(REPOSITORY_ERROR_CODES.FORBIDDEN, 'Somente parceiros podem consultar o perfil público de candidatos.')
+      }
+
+      try {
+        const snapshot = await getDoc(doc(
+          database,
+          OPPORTUNITIES_COLLECTION,
+          opportunityId,
+          PUBLIC_CANDIDATE_PROFILES_SUBCOLLECTION,
+          athleteId,
+        ))
+        if (!snapshot.exists()) {
+          return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Perfil público do candidato não encontrado para esta oportunidade.')
+        }
+
+        const candidate = normalizeDocument(snapshot)
+        if (candidate.oportunidadeId !== opportunityId || candidate.atletaId !== athleteId) {
+          return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Perfil público do candidato não encontrado para esta oportunidade.')
+        }
+        if (!candidate.perfilPublico || typeof candidate.perfilPublico !== 'object' || Array.isArray(candidate.perfilPublico)) {
+          return failure(REPOSITORY_ERROR_CODES.INVALID_DATA, 'O perfil público do candidato está inconsistente.')
+        }
+
+        return success(candidate.perfilPublico)
+      } catch (error) {
+        if (error?.code === 'permission-denied') {
+          return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Perfil público do candidato não encontrado para esta oportunidade.')
+        }
         return mapFirebaseError(error)
       }
     },
