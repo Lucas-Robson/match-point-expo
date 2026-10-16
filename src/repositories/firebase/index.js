@@ -682,29 +682,6 @@ export function createFirebaseRepositories() {
     },
     calcularIdade: async (birthDate, referenceDate) => success(calculateAge(birthDate, referenceDate)),
     identificarMenor: async (birthDate, referenceDate) => success(isMinor(birthDate, referenceDate)),
-    vincularResponsavel: async (athleteId, guardianId) => {
-      const athleteReference = doc(database, ATHLETES_COLLECTION, athleteId)
-      const guardianReference = doc(database, GUARDIANS_COLLECTION, guardianId)
-      try {
-        return await runTransaction(database, async (transaction) => {
-          const [athleteSnapshot, guardianSnapshot] = await Promise.all([
-            transaction.get(athleteReference),
-            transaction.get(guardianReference),
-          ])
-          if (!athleteSnapshot.exists() || !guardianSnapshot.exists()) {
-            return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Atleta ou responsável não encontrado.')
-          }
-          const guardian = normalizeDocument(guardianSnapshot)
-          const athlete = { ...normalizeDocument(athleteSnapshot), responsavelId: guardianId }
-          const atletasVinculadosIds = [...new Set([...(guardian.atletasVinculadosIds ?? []), athleteId])]
-          transaction.update(athleteReference, { responsavelId: guardianId })
-          transaction.update(guardianReference, { atletasVinculadosIds, atualizadoEm: now() })
-          return success({ athlete, guardian: { ...guardian, atletasVinculadosIds } })
-        })
-      } catch (error) {
-        return mapFirebaseError(error)
-      }
-    },
     obterAtletasDoResponsavel: async (guardianId) => {
       try {
         const guardianSnapshot = await getDoc(doc(database, GUARDIANS_COLLECTION, guardianId))

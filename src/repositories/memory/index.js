@@ -337,16 +337,6 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
     },
     calcularIdade: async (birthDate, referenceDate) => success(calculateAge(birthDate, referenceDate)),
     identificarMenor: async (birthDate, referenceDate) => success(isMinor(birthDate, referenceDate)),
-    vincularResponsavel: async (athleteId, guardianId) => {
-      const athlete = findAthlete(athleteId)
-      const guardian = state.guardians.find((item) => item.id === guardianId)
-      if (!athlete || !guardian) {
-        return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Atleta ou responsável não encontrado.')
-      }
-      athlete.responsavelId = guardianId
-      if (!guardian.atletasVinculadosIds.includes(athleteId)) guardian.atletasVinculadosIds.push(athleteId)
-      return success({ athlete, guardian })
-    },
     obterAtletasDoResponsavel: async (guardianId) => {
       const guardian = state.guardians.find((item) => item.id === guardianId)
       if (!guardian) return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Responsável não encontrado.')

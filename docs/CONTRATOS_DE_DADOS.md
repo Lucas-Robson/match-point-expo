@@ -243,7 +243,6 @@ obterPerfilResponsavelPorUsuario(usuarioId)
 gerarCodigoVinculoResponsavel(responsavelId)
 calcularIdade(dataNascimento, dataReferencia?)
 identificarMenor(dataNascimento, dataReferencia?)
-vincularResponsavel(atletaId, responsavelId)
 obterAtletasDoResponsavel(responsavelId)
 atualizarAtletaComoResponsavel(responsavelId, atletaId, dados)
 ```
@@ -253,6 +252,9 @@ O código é de uso único e deve ser informado em `codigoResponsavel` durante o
 cadastro de um atleta menor. O cadastro consome o código e atualiza atleta e
 responsável na mesma operação; códigos inválidos, expirados ou já utilizados
 não criam a conta do atleta.
+
+Não existe operação de vínculo direto por IDs. Todo novo vínculo deve nascer
+do consumo do código durante o cadastro do atleta menor.
 
 ### Oportunidades
 
