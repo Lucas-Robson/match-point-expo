@@ -110,6 +110,15 @@ export function PartnerOpportunityDetailScreen({ go, back, repositories, session
           <ListSection title="Requisitos" values={opportunity.requisitos} empty="Nenhum requisito informado." />
           <ListSection title="Documentos necessários" values={opportunity.documentosNecessarios} empty="Nenhum documento exigido." />
 
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => go('partnerOpportunityCandidates', { opportunityId: opportunity.id })}
+            style={partnerStyles.primaryButton}
+          >
+            <Ionicons name="people-outline" size={18} color={partnerColors.white} />
+            <Text style={partnerStyles.primaryButtonText}>Ver candidaturas</Text>
+          </Pressable>
+
           {confirmClose ? (
             <View style={styles.confirmBox}>
               <Text style={styles.confirmTitle}>Encerrar esta oportunidade?</Text>
