@@ -2,7 +2,7 @@
 
 > Arquivo gerado por `npm run progress`. Não edite esta página manualmente.
 
-Última atualização registrada: 2026-10-16T17:08:07.092Z
+Última atualização registrada: 2026-10-16T17:28:26.397Z
 
 ## Barras de progresso
 
@@ -19,7 +19,7 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 | --- | --- | --- | --- | --- |
 | Maria | 1/7 | 1/7 | 1 | 1 |
 | Marcelo | 0/6 | 0/7 | 2 | 4 |
-| Laura | 0/3 | 0/6 | 1 | 0 |
+| Laura | 0/3 | 0/6 | 0 | 1 |
 | Renato | 0/5 | 0/5 | 5 | 0 |
 
 ## Requisitos
@@ -34,7 +34,7 @@ Somente requisitos `Concluídos`, com PR e evidência, avançam as barras. Itens
 | RF06 — Vínculo do responsável | P0 | Maria | Não iniciado | — | — |
 | RF07 — Responsável administra atleta | P0 | Maria | Não iniciado | — | — |
 | RF08 — Verificação de parceiros | P1 | Laura | Não iniciado | — | — |
-| RF09 — Gerenciar oportunidades | P0 | Laura | Em andamento | — | — |
+| RF09 — Gerenciar oportunidades | P0 | Laura | Bloqueado | — | Push negado por falta de permissão no remoto origin (HTTP 403); PR pendente. |
 | RF10 — Pesquisa e filtros | P0 | Marcelo | Em andamento | — | — |
 | RF11 — Detalhes da oportunidade | P0 | Marcelo | Bloqueado | — | Aguardando rota com routeParams e operação Firebase para obter oportunidade por ID |
 | RF12 — Compatibilidade | P0 | Renato | Em andamento | — | — |
