@@ -102,6 +102,9 @@ assert.equal(partnerSignup.ok, true)
 const partnerProfile = await signupRepositories.users.obterPerfilParceiro(partnerSignup.data.id)
 assert.equal(partnerProfile.ok, true)
 assert.equal(partnerProfile.data.documento, '12345678900')
+const partnerProfileByUser = await signupRepositories.users.obterPerfilParceiroPorUsuario(partnerSignup.data.id)
+assert.equal(partnerProfileByUser.ok, true)
+assert.equal(partnerProfileByUser.data.id, partnerProfile.data.id)
 
 const institutionSignup = await signupRepositories.authentication.cadastrar(
   'nova.instituicao@matchpoint.example',
