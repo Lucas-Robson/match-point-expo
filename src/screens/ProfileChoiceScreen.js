@@ -1,5 +1,5 @@
 import React from 'react'
-import { Pressable, Text, View } from 'react-native'
+import { Pressable, ScrollView, Text, View } from 'react-native'
 import { Shell } from '../components/ui/Shell'
 import { assets } from '../theme/assets'
 import { styles } from '../theme/styles'
@@ -16,16 +16,22 @@ export function ProfileChoiceScreen({ go, back }) {
   return (
     <Shell background={assets.court} back={back}>
       <View style={styles.choicePanel}>
-        <Text style={styles.choiceHeading}>Como você quer usar o</Text>
-        <Text style={styles.choiceBrand}>Match Point?</Text>
-        <View style={styles.profileList}>
-          {profiles.map(([prefix, accent, copy], index) => (
-            <Pressable key={accent} onPress={() => go(destinations[index])} style={({ pressed }) => [styles.profileCard, pressed && styles.pressed]}>
-              <Text style={styles.profileTitle}>{prefix}<Text style={styles.profileAccent}>{accent}</Text></Text>
-              <Text style={styles.profileCopy}>{copy}</Text>
-            </Pressable>
-          ))}
-        </View>
+        <ScrollView
+          style={styles.choiceScroll}
+          contentContainerStyle={styles.choiceContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.choiceHeading}>Como você quer usar o</Text>
+          <Text style={styles.choiceBrand}>Match Point?</Text>
+          <View style={styles.profileList}>
+            {profiles.map(([prefix, accent, copy], index) => (
+              <Pressable key={accent} onPress={() => go(destinations[index])} style={({ pressed }) => [styles.profileCard, pressed && styles.pressed]}>
+                <Text style={styles.profileTitle}>{prefix}<Text style={styles.profileAccent}>{accent}</Text></Text>
+                <Text style={styles.profileCopy}>{copy}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </ScrollView>
       </View>
     </Shell>
   )
