@@ -15,7 +15,7 @@ service cloud.firestore {
     }
 
     function isPartnerUser() {
-      return signedIn() && (userType() == 'treinador' || userType() == 'instituicao');
+      return signedIn() && userType() in ['treinador', 'instituicao'];
     }
 
     function ownsAthlete(athleteId) {
@@ -46,6 +46,69 @@ service cloud.firestore {
 
     function ownsApplicationOpportunity(application) {
       return ownsOpportunity(application.oportunidadeId);
+    }
+
+    function candidateApplicationExists(opportunityId, athleteId, applicationId) {
+      let applicationPath = /databases/$(database)/documents/candidaturas/$(applicationId);
+      return exists(applicationPath)
+        && get(applicationPath).data.id == applicationId
+        && get(applicationPath).data.oportunidadeId == opportunityId
+        && get(applicationPath).data.atletaId == athleteId;
+    }
+
+    function candidateApplicationExistsAfter(opportunityId, athleteId, applicationId) {
+      let applicationPath = /databases/$(database)/documents/candidaturas/$(applicationId);
+      return existsAfter(applicationPath)
+        && getAfter(applicationPath).data.id == applicationId
+        && getAfter(applicationPath).data.oportunidadeId == opportunityId
+        && getAfter(applicationPath).data.atletaId == athleteId;
+    }
+
+    function validPublicCandidateProfile(athleteId, profile) {
+      let athlete = get(/databases/$(database)/documents/atletas/$(athleteId)).data;
+      let user = get(/databases/$(database)/documents/usuarios/$(athlete.usuarioId)).data;
+      return profile is map
+        && profile.keys().hasOnly([
+          'nome',
+          'fotoUrl',
+          'modalidade',
+          'categoria',
+          'posicao',
+          'maoDominante',
+          'equipeAtual',
+          'tempoDePratica',
+          'ranking',
+          'torneiosDisputados',
+          'titulos',
+          'perfilCompleto'
+        ])
+        && profile.keys().hasAll([
+          'nome',
+          'fotoUrl',
+          'modalidade',
+          'categoria',
+          'posicao',
+          'maoDominante',
+          'equipeAtual',
+          'tempoDePratica',
+          'ranking',
+          'torneiosDisputados',
+          'titulos',
+          'perfilCompleto'
+        ])
+        && user.tipo == 'atleta'
+        && profile.nome == user.get('nome', '')
+        && profile.fotoUrl == user.get('fotoUrl', null)
+        && profile.modalidade == athlete.get('modalidade', '')
+        && profile.categoria == athlete.get('categoria', null)
+        && profile.posicao == athlete.get('posicao', null)
+        && profile.maoDominante == athlete.get('maoDominante', null)
+        && profile.equipeAtual == athlete.get('equipeAtual', null)
+        && profile.tempoDePratica == athlete.get('tempoDePratica', null)
+        && profile.ranking == athlete.get('ranking', null)
+        && profile.torneiosDisputados == athlete.get('torneiosDisputados', null)
+        && profile.titulos == athlete.get('titulos', null)
+        && profile.perfilCompleto == athlete.get('perfilCompleto', false);
     }
 
     function guardianCanAccessAthlete(athlete) {
@@ -106,7 +169,6 @@ service cloud.firestore {
         && (
           resource.data.usuarioId == request.auth.uid
           || guardianCanAccessAthlete(resource.data)
-          || isPartnerUser()
         );
       allow update: if signedIn()
         && (
@@ -205,6 +267,42 @@ service cloud.firestore {
         && request.resource.data.id == resource.data.id
         && request.resource.data.criadorId == resource.data.criadorId;
       allow delete: if false;
+    }
+
+    match /oportunidades/{opportunityId}/perfisCandidatos/{athleteId} {
+      allow get, list: if isPartnerUser()
+        && ownsOpportunity(opportunityId)
+        && resource.data.oportunidadeId == opportunityId
+        && resource.data.atletaId == athleteId
+        && candidateApplicationExists(
+          opportunityId,
+          athleteId,
+          resource.data.candidaturaId
+        );
+      allow create: if signedIn()
+        && ownsAthlete(athleteId)
+        && request.resource.data.keys().hasOnly([
+          'oportunidadeId',
+          'atletaId',
+          'candidaturaId',
+          'perfilPublico'
+        ])
+        && request.resource.data.keys().hasAll([
+          'oportunidadeId',
+          'atletaId',
+          'candidaturaId',
+          'perfilPublico'
+        ])
+        && request.resource.data.oportunidadeId == opportunityId
+        && request.resource.data.atletaId == athleteId
+        && request.resource.data.candidaturaId is string
+        && candidateApplicationExistsAfter(
+          opportunityId,
+          athleteId,
+          request.resource.data.candidaturaId
+        )
+        && validPublicCandidateProfile(athleteId, request.resource.data.perfilPublico);
+      allow update, delete: if false;
     }
 
     match /candidaturas/{applicationId} {

@@ -282,12 +282,40 @@ criarCandidatura(oportunidadeId, atletaId, dados)
 obterCandidatura(id)
 listarCandidaturasDoAtleta(atletaId, filtros)
 listarCandidatosDaOportunidade(oportunidadeId, filtros)
+obterPerfilPublicoCandidato(oportunidadeId, atletaId)
 atualizarStatusDaCandidatura(id, status)
 enviarDocumento(candidaturaId, documento)
 verificarCandidaturaExistente(oportunidadeId, atletaId)
 listarHistoricoDaCandidatura(candidaturaId)
 registrarEventoDaCandidatura(candidaturaId, evento)
 ```
+
+`obterPerfilPublicoCandidato` só retorna dados quando o usuário autenticado é
+treinador/instituição responsável pela oportunidade e o atleta possui uma
+candidatura nela. O resultado é um retrato capturado no momento da candidatura:
+
+```text
+nome
+fotoUrl?
+modalidade
+categoria?
+posicao?
+maoDominante?
+equipeAtual?
+tempoDePratica?
+ranking?
+torneiosDisputados?
+titulos?
+perfilCompleto
+```
+
+E-mail, telefone, data de nascimento, CPF, localização e dados de responsável
+legal não fazem parte do resultado. No Firebase, o retrato fica em
+`oportunidades/{oportunidadeId}/perfisCandidatos/{atletaId}` e somente o
+responsável pela oportunidade pode lê-lo. O documento é criado atomicamente
+com a candidatura e suas regras só aceitam os campos públicos derivados dos
+documentos do próprio atleta e usuário. Candidaturas existentes antes dessa
+operação exigem migração aprovada para gerar os retratos correspondentes.
 
 ### Arquivos de candidatura
 

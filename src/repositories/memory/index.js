@@ -3,6 +3,7 @@ import {
   OPPORTUNITY_STATUS,
   REPOSITORY_ERROR_CODES,
   USER_TYPES,
+  buildPublicCandidateProfile,
   canTransitionApplicationStatus,
   calculateAge,
   isMinor,
@@ -41,6 +42,21 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
   const findOpportunity = (id) => state.opportunities.find((opportunity) => opportunity.id === id)
   const findApplication = (id) => state.applications.find((application) => application.id === id)
   const findGuardian = (id) => state.guardians.find((guardian) => guardian.id === id)
+  const makePublicCandidateSnapshot = (application) => {
+    const athlete = findAthlete(application.atletaId)
+    const user = athlete ? findUser(athlete.usuarioId) : null
+    if (!athlete || !user) return null
+
+    return {
+      oportunidadeId: application.oportunidadeId,
+      atletaId: application.atletaId,
+      candidaturaId: application.id,
+      perfilPublico: buildPublicCandidateProfile(user, athlete),
+    }
+  }
+  state.publicCandidateProfiles ??= state.applications
+    .map(makePublicCandidateSnapshot)
+    .filter(Boolean)
   const normalizeLinkCode = (value) => String(value ?? '').trim().toUpperCase()
   const findActiveGuardianInvite = (code) => state.guardianInvites.find((invitation) => (
     invitation.codigo === normalizeLinkCode(code)
@@ -466,6 +482,11 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
         )
       }
 
+      const athlete = findAthlete(athleteId)
+      if (!athlete || !findUser(athlete.usuarioId)) {
+        return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Dados públicos do atleta não encontrados.')
+      }
+
       const application = {
         id: nextId('candidatura'),
         oportunidadeId: opportunityId,
@@ -486,6 +507,8 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
         responsavelId: data.responsavelId ?? athleteId,
       })
       state.applications.push(application)
+      const publicCandidateSnapshot = makePublicCandidateSnapshot(application)
+      state.publicCandidateProfiles.push(publicCandidateSnapshot)
       return success(application)
     },
     obterCandidatura: async (id) => {
@@ -502,6 +525,32 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
         application.oportunidadeId === opportunityId && (!filters.status || application.status === filters.status)
       )),
     ),
+    obterPerfilPublicoCandidato: async (opportunityId, athleteId) => {
+      const user = currentSession()
+      if (!user) {
+        return failure(REPOSITORY_ERROR_CODES.UNAUTHENTICATED, 'Nenhuma sessão ativa.')
+      }
+      if (![USER_TYPES.TRAINER, USER_TYPES.INSTITUTION].includes(user.tipo)) {
+        return failure(REPOSITORY_ERROR_CODES.FORBIDDEN, 'Somente parceiros podem consultar o perfil público de candidatos.')
+      }
+
+      const partner = state.partners.find((item) => item.usuarioId === user.id)
+      const opportunity = findOpportunity(opportunityId)
+      const application = state.applications.find((item) => (
+        item.oportunidadeId === opportunityId && item.atletaId === athleteId
+      ))
+      const candidateSnapshot = state.publicCandidateProfiles.find((item) => (
+        item.oportunidadeId === opportunityId
+        && item.atletaId === athleteId
+        && item.candidaturaId === application?.id
+      ))
+
+      if (!partner || !opportunity || opportunity.criadorId !== partner.id || !application || !candidateSnapshot) {
+        return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Perfil público do candidato não encontrado para esta oportunidade.')
+      }
+
+      return success(candidateSnapshot.perfilPublico)
+    },
     atualizarStatusDaCandidatura: async (id, nextStatus, responsibleId = currentUserId) => {
       const application = findApplication(id)
       if (!application) return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Candidatura não encontrada.')
