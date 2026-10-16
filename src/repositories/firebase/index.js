@@ -258,6 +258,21 @@ export function createFirebaseRepositories() {
     }
   }
 
+  const getAthleteByUserId = async (userId) => {
+    try {
+      const snapshots = await getDocs(query(
+        collection(database, ATHLETES_COLLECTION),
+        where('usuarioId', '==', userId),
+      ))
+      const athleteSnapshot = snapshots.docs[0]
+      return athleteSnapshot
+        ? success(normalizeDocument(athleteSnapshot))
+        : failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Perfil esportivo não encontrado para este usuário.')
+    } catch (error) {
+      return mapFirebaseError(error)
+    }
+  }
+
   const getOpportunityById = async (id) => {
     try {
       const snapshot = await getDoc(doc(database, OPPORTUNITIES_COLLECTION, id))
@@ -431,10 +446,16 @@ export function createFirebaseRepositories() {
       const user = await getUserById(userId)
       if (!user.ok) return user
 
+      const existingProfile = await getAthleteByUserId(userId)
+      if (existingProfile.ok) {
+        return failure(REPOSITORY_ERROR_CODES.INVALID_DATA, 'Este usuário já possui um perfil esportivo.')
+      }
+      if (existingProfile.codigo !== REPOSITORY_ERROR_CODES.NOT_FOUND) return existingProfile
+
       const athlete = {
-        id: newId(database, ATHLETES_COLLECTION),
-        usuarioId: userId,
         ...data,
+        id: data.id ?? userId,
+        usuarioId: userId,
         perfilCompleto: Boolean(data.perfilCompleto),
       }
       if (isMinor(athlete.dataNascimento) && !athlete.responsavelId) {
@@ -449,6 +470,7 @@ export function createFirebaseRepositories() {
       }
     },
     obterPerfilAtleta: getAthleteById,
+    obterPerfilAtletaPorUsuario: getAthleteByUserId,
     atualizarPerfilAtleta: async (id, data) => {
       try {
         await updateDoc(doc(database, ATHLETES_COLLECTION, id), { ...data, id })
@@ -639,10 +661,14 @@ export function createFirebaseRepositories() {
     obterMatchScore: async (athleteId, opportunityId) => match.calcularMatchScore(athleteId, opportunityId),
   }
 
-  const uploadApplicationDocument = async (applicationId, documentData) => {
-    if (documentData.arquivoUrl) return success(documentData)
+  const uploadApplicationDocument = async (applicationId, documentData = {}) => {
+    const application = await getApplicationById(applicationId)
+    if (!application.ok) return application
 
-    const source = documentData.arquivo ?? documentData.file
+    const { arquivo, file: sourceFile, ...metadata } = documentData
+    if (metadata.arquivoUrl) return success(metadata)
+
+    const source = arquivo ?? sourceFile
     if (!source) {
       return failure(REPOSITORY_ERROR_CODES.INVALID_DATA, 'Selecione um arquivo antes de enviar o documento.')
     }
@@ -651,14 +677,14 @@ export function createFirebaseRepositories() {
       const file = source.uri
         ? await (await fetch(source.uri)).blob()
         : source
-      const documentId = documentData.id ?? newId(database, 'documentosCandidatura')
-      const fileName = documentData.nome ?? source.name ?? `${documentId}.bin`
+      const documentId = metadata.id ?? newId(database, 'documentosCandidatura')
+      const fileName = metadata.nome ?? source.name ?? `${documentId}.bin`
       const storageReference = ref(storage, `candidaturas/${applicationId}/${documentId}-${fileName}`)
       await uploadBytes(storageReference, file, {
-        contentType: documentData.tipoMime ?? source.type ?? 'application/octet-stream',
+        contentType: metadata.tipoMime ?? source.type ?? 'application/octet-stream',
       })
       return success({
-        ...documentData,
+        ...metadata,
         id: documentId,
         nome: fileName,
         arquivoUrl: await getDownloadURL(storageReference),
@@ -666,6 +692,10 @@ export function createFirebaseRepositories() {
     } catch (error) {
       return mapFirebaseError(error)
     }
+  }
+
+  const storageRepository = {
+    enviarArquivoCandidatura: uploadApplicationDocument,
   }
 
   const applications = {
@@ -830,7 +860,7 @@ export function createFirebaseRepositories() {
     enviarDocumento: async (id, documentData) => {
       const applicationReference = doc(database, APPLICATIONS_COLLECTION, id)
       const updatedAt = now()
-      const uploadedDocument = await uploadApplicationDocument(id, documentData)
+      const uploadedDocument = await storageRepository.enviarArquivoCandidatura(id, documentData)
       if (!uploadedDocument.ok) return uploadedDocument
 
       try {
@@ -887,5 +917,5 @@ export function createFirebaseRepositories() {
     },
   }
 
-  return { authentication, users, opportunities, applications, match }
+  return { authentication, users, opportunities, applications, match, storage: storageRepository }
 }

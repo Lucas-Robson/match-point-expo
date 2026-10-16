@@ -200,10 +200,13 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
     },
     criarPerfilAtleta: async (userId, data) => {
       if (!findUser(userId)) return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Usuário não encontrado.')
+      if (state.athletes.some((athlete) => athlete.usuarioId === userId)) {
+        return failure(REPOSITORY_ERROR_CODES.INVALID_DATA, 'Este usuário já possui um perfil esportivo.')
+      }
       const athlete = {
-        id: nextId('atleta'),
-        usuarioId: userId,
         ...data,
+        id: data.id ?? userId,
+        usuarioId: userId,
         perfilCompleto: Boolean(data.perfilCompleto),
       }
       if (isMinor(athlete.dataNascimento) && !athlete.responsavelId) {
@@ -224,6 +227,12 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
     obterPerfilAtleta: async (id) => {
       const athlete = findAthlete(id)
       return athlete ? success(athlete) : failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Atleta não encontrado.')
+    },
+    obterPerfilAtletaPorUsuario: async (userId) => {
+      const athlete = state.athletes.find((item) => item.usuarioId === userId)
+      return athlete
+        ? success(athlete)
+        : failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Perfil esportivo não encontrado para este usuário.')
     },
     atualizarPerfilAtleta: async (id, data) => {
       const athlete = findAthlete(id)
@@ -355,6 +364,31 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
     obterMatchScore: async (athleteId, opportunityId) => match.calcularMatchScore(athleteId, opportunityId),
   }
 
+  const storage = {
+    enviarArquivoCandidatura: async (applicationId, documentData = {}) => {
+      if (!findApplication(applicationId)) {
+        return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Candidatura não encontrada.')
+      }
+
+      const { arquivo, file: sourceFile, ...metadata } = documentData
+      if (metadata.arquivoUrl) return success(metadata)
+
+      const source = arquivo ?? sourceFile
+      if (!source) {
+        return failure(REPOSITORY_ERROR_CODES.INVALID_DATA, 'Selecione um arquivo antes de enviar o documento.')
+      }
+
+      const documentId = metadata.id ?? nextId('documento')
+      const fileName = metadata.nome ?? source.name ?? `${documentId}.bin`
+      return success({
+        ...metadata,
+        id: documentId,
+        nome: fileName,
+        arquivoUrl: source.uri ?? `memory://candidaturas/${applicationId}/${documentId}-${fileName}`,
+      })
+    },
+  }
+
   const applications = {
     verificarCandidaturaExistente: async (opportunityId, athleteId) => success(
       state.applications.some((application) => (
@@ -431,10 +465,14 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
       })
       return success(application)
     },
-    enviarDocumento: async (id, document) => {
+    enviarDocumento: async (id, documentData) => {
       const application = findApplication(id)
       if (!application) return failure(REPOSITORY_ERROR_CODES.NOT_FOUND, 'Candidatura não encontrada.')
-      application.documentos.push({ id: nextId('documento'), ...document, enviadoEm: now() })
+
+      const uploadedDocument = await storage.enviarArquivoCandidatura(id, documentData)
+      if (!uploadedDocument.ok) return uploadedDocument
+
+      application.documentos.push({ ...uploadedDocument.data, enviadoEm: uploadedDocument.data.enviadoEm ?? now() })
       application.atualizadoEm = now()
       return success(application)
     },
@@ -458,6 +496,7 @@ export function createMemoryRepositories(initialSeed = demoSeed) {
     opportunities,
     applications,
     match,
+    storage,
     snapshot: () => clone(state),
     reset: () => {
       state = clone(initialSeed)

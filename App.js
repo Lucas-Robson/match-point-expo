@@ -149,6 +149,7 @@ export default function App() {
   const { width, height } = useWindowDimensions()
   const repositories = useMemo(() => createRepositories(), [])
   const [route, setRoute] = useState({ name: 'opening', params: {} })
+  const routeHistory = useRef([])
   const [session, setSession] = useState(null)
   const [sessionResolved, setSessionResolved] = useState(false)
   const transitionDirection = useRef(1)
@@ -162,6 +163,7 @@ export default function App() {
       setSessionResolved(true)
 
       if (!nextSession) {
+        routeHistory.current = []
         setRoute({ name: 'opening', params: {} })
         return
       }
@@ -169,6 +171,7 @@ export default function App() {
       const destination = getHomeRouteForUser(nextSession)
       if (destination) {
         transitionDirection.current = 1
+        routeHistory.current = []
         setRoute({ name: destination, params: {} })
       }
     })
@@ -184,12 +187,20 @@ export default function App() {
     const currentPosition = TAB_POSITION[screen]
     const nextPosition = TAB_POSITION[next]
     transitionDirection.current = Number.isFinite(currentPosition) && Number.isFinite(nextPosition) && nextPosition < currentPosition ? -1 : 1
+    routeHistory.current = [...routeHistory.current, route]
     setRoute({ name: next, params })
   }
 
   const back = () => {
     transitionDirection.current = -1
-    setRoute({ name: HISTORY[screen] || 'opening', params: {} })
+    const previousRoute = routeHistory.current.at(-1)
+    if (previousRoute) {
+      routeHistory.current = routeHistory.current.slice(0, -1)
+      setRoute(previousRoute)
+      return
+    }
+
+    setRoute({ name: HISTORY[screen] || 'opening', params: route.params })
   }
 
   if ((!fontsLoaded && !fontError) || !sessionResolved) {
